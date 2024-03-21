@@ -1,0 +1,40 @@
+{
+    // "filter_examples": [""],  // dev
+    "use_cache": true,
+    "prefix": "",
+
+    // ********* # Highlights **************
+    "do_highlights": true,
+
+    "highlights_detection_model_path": "trained_models/saliency_detection/qa__allenai_PRIMERA",
+    "highlights_approach": "generative",
+    "highlights_detection_num_beams": 2,
+    "min_highlights_generated": 5,
+
+    // ************************************
+    
+    // ************ # Clustering ************
+    "do_clustering": true,
+    "rewrite_clustering_cache": false,
+
+    "clustering_approach": "generative_clustering",
+    "highlights_representation_model_path": "trained_models/generative_clustering/qa__allenai_PRIMERA",
+    
+    "generative_highlighting_logits_processor": true,
+    "max_highlights_per_sent": 2,
+
+    "similarity_calculator": "exact_match",
+
+    // ************************************
+
+    // *********** # Summarization **********
+    "do_summarization": true,
+    "attributable_fusion_model_path": "trained_models/attributable_fusion/qa__allenai_PRIMERA",
+    "num_beams": 5,
+    // ************************************
+
+
+    // *********** # Data *******************
+    // Evaluating
+    "data_file_path": "data/evaluating/dev.json"
+}

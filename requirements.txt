@@ -1,0 +1,11 @@
+datasets
+evaluate
+nltk
+numpy
+transformers==4.36.0
+torch
+json_minify
+accelerate
+rouge_score
+spacy
+sentence_transformers

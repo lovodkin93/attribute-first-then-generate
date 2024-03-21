@@ -1,0 +1,8 @@
+{
+    "e2e_model_path": "allenai/PRIMERA",
+    "data_path": "trained_models/generation_e2e/zero_shot/mds__allenai_PRIMERA",
+
+    "num_beams": 5,
+
+    "data_file_path": "data/multinews/test.json"
+}

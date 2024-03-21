@@ -1,0 +1,49 @@
+{
+
+    "dataset_type": "generative_clustering",
+
+    "overwrite_output_dir": true,
+    "predict_with_generate": true,
+
+    "task_type": "qa",
+
+    "train_file": "data/evaluating/train.json",
+    "validation_file": "data/evaluating/dev.json",
+    "test_file": "data/evaluating/test.json",
+
+    "max_source_length": 4096,
+    "max_target_length": 1024,
+
+    // ********** Training **********
+    "model_name_or_path": "allenai/PRIMERA",
+    "do_train": true,
+    "do_eval": true,
+    "evaluation_strategy": "steps",
+    "metric_for_best_model": "eval_rougeL",
+    "load_best_model_at_end": true,
+    "save_total_limit": 2,  // Save only last one and best one
+    "overwrite_cache": true,
+    "per_device_train_batch_size": 4,
+    "per_device_eval_batch_size": 4,
+    "preprocess_context_window": 2,
+    "preprocess_only_before": true,
+
+    "warmup_steps": 298,
+    "weight_decay": 0,
+    "learning_rate": 2e-4,
+
+    "eval_steps": 0.05,
+    "save_steps": 0.05,
+    "logging_first_step": true,
+    "logging_steps": 0.01,
+    // ********************************
+
+
+   // ********** Regular (non HP-tuning) **********
+   "output_dir": "trained_models/generative_clustering",
+   "num_train_epochs": 10,
+   "do_hyperparameter_tuning": false,
+   // ******************************
+
+    "report_to": "wandb"
+}
