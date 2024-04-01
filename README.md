@@ -56,3 +56,6 @@ Scripts for fine-tuning models and running fine-tuned models are in the director
 `inference.py` is used for the inference of First-attribute models.
 
 `inference_e2e.py` is used for the inference of the vanilla baseline Primera model.
+
+## Few-shot In-context Learning Variants
+coming soon...
