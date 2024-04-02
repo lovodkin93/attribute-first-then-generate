@@ -1,6 +1,6 @@
 # Attribute First, then Generate
 
-<p align=center>
+<p align=left>
     <img src="./First-attribute-then-generate architecture.jpg" width="60%" height="60%"  alt="taxonomy"/>
     <br>
     <em>Our attribution-driven generation approach.</em>
