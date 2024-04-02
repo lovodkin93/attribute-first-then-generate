@@ -1,4 +1,4 @@
-# attribute-first-then-generate
+# Attribute First, then Generate
 
 # Data format
 
