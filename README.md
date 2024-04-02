@@ -2,7 +2,6 @@
 
 <p align=left>
     <img src="./First-attribute-then-generate architecture.jpg" width="60%" height="60%"  alt="taxonomy"/>
-    <br>
 </p>
 
 # Data format
