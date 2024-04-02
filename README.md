@@ -59,3 +59,16 @@ Scripts for fine-tuning models and running fine-tuned models are in the director
 
 ## Few-shot in-context learning variants
 Code coming soon!
+
+# Citation
+If you use this in your work, please cite:
+```
+@misc{slobodkin2024attribute,
+      title={Attribute First, then Generate: Locally-attributable Grounded Text Generation}, 
+      author={Aviv Slobodkin and Eran Hirsch and Arie Cattan and Tal Schuster and Ido Dagan},
+      year={2024},
+      eprint={2403.17104},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+```
