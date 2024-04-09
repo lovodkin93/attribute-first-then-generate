@@ -1,0 +1,539 @@
+{
+    "instruction-e2e-only-setting": "Write an accurate, engaging, and concise summary for the given passages. Make sure that the summary consists of approximately 200 words and at least 7 sentences.",
+    "instruction-ALCE": "Instruction: Write an accurate, engaging, and concise summary for the given passages and cite them properly. Use an unbiased and journalistic tone. Always cite for any factual claim. When citing several passages, use [1][2][3]. Cite at least one passage and at most three passages after each sentence. If multiple passages support the sentence, only cite a minimum sufficient subset of the passages. Make sure that the summary consists of approximately 200 words and at least 7 sentences.",
+    "instruction-FiC": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). Your job is to generate a coherent summary that covers all and only the \"highlighted\" spans. Make sure all highlights are included.",
+    "instruction-FiC-CoT": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). Your job is to generate a coherent summary that covers all and only the \"highlighted\" spans. Build the summary iteratively, where each time you cluster highlights to build the next sentence. Make sure all highlights are included. IMPORTANT: The clustering steps must be of the form: \"Highlights {comma-delimited highlights indices} are combined to form sentence {sentence_id}:{sentence_text}\". Additionally, before generating the final summary, say \"So the final summary is:\".",
+    "instruction-clustering": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). The goal is to fuse all those highlights into a single summary. As an intermediate step, you need to cluster highlights that can be merged into a sentence (namely, each cluster will be later merged into one sentence). Make sure the clusters are in the same order you would then write the corresponding summary sentences. IMPORTANT: The output must be of the format [{\"cluster\":[comma-delimited highlights indices]}]",
+    "instruction-content-selection": "In this task, you are presented with several documents, which need to be summarized. As an intermediate step, you need to identify salient content within the documents. For each document, copy verbatim the salient spans, and use <SPAN_DELIM> as a delimiter between each consecutive span. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive salient spans. IMPORTANT: Each salient content must be a single consecutive verbatim span from the corresponding passages.",
+    "instruction-next-cluster-fusion": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). You are also presented with a prefix of a paragraph. You job is to generate the next sentence in the paragraph, that covers all and only the \"highlighted\" spans. Make sure it connects well with the prefix, and that it covers all and only the \"highlighted\" spans.",
+    "instruction-iter-QA-blueprint": "In this task, you are presented with several documents and a prefix. The goal is to summarize the given documents. We will be building the output summary sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract a set of up to 5 question-answer pairs from the input documents that best describe the relevant information for the next sentence (acting as a plan), and then generate that sentence based on those question-answer pairs. IMORTANT: avoid redundancy compared to the prefix. IMORTANT: the output must be of the form: Plan: A: <ANSWER1> Q: <QUESTION1> ; A: <ANSWER2> Q: <QUESTION2> ; ... So the next sentence is: <NEXT_SENT>. IMPORTANT: if the prefix is already a good summary, reply \"{BLUEPRINT_EOS}\".",
+    "instruction-iter-span-blueprint": "In this task, you are presented with several documents and a prefix. The goal is to summarize the given documents. We will be building the output summary sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract verbatim a set of relevant spans from the input documents that best describe the relevant information for the next sentence (acting as a plan), and use <SPAN_DELIM> as a delimiter between each consecutive span. Then, generate the next sentence based on those spans. IMORTANT: avoid redundancy compared to the prefix. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive spans. IMPORTANT: Each such span must be a single consecutive verbatim span from the corresponding passages. IMPORTANT: if the prefix already properly answers the question, reply \"{BLUEPRINT_EOS}\".",
+    "demo_sep": "\n\n\n",
+    "highlight_start_tkn":"<highlight_start>",
+    "highlight_end_tkn":"<highlight_end>",
+    "blueprint_eos": "STOP GENERATION",
+    "demo_prompt": "{INST}\n\n{D}\n{A}",
+    "demo_prompt_next_cluster_fusion": "{INST}\n\n{D}\nPrefix:{PRFX}\n{A}",
+    "demo_prompt_iter_blueprint": "{INST}\n\n{D}\nPrefix:{PRFX}\nAnswer: {A}",
+    "doc_prompt": "Document [{ID}]: {P}\n",
+    "answer_FiC_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nSo the summary is: {CoT_RESP}",
+    "answer_FiC-CoT_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nThe highlighted spans are combined as follows:\n{PLANNING}",
+    "answer_FiC_planning_prompt":"{HFUSE}\n\nSo the final summary is: {SUMM}",
+    "answer_highlights_listing_prompt": "Document [{ID}]:\n{HLIST_DOC}\n",
+    "answer_highlights_fusion_prompt": "Highlights {HFUSE_SENT} are combined to form sentence {SENT_ID}: {SENT}\n",
+    "answer_clustering_prompt": "The highlighted spans are:\n{HLIST}\n\nAnswer: The highlighted spans are clustered as follows:\n{CLUSTERS}",
+    "answer_clustering-CoT_prompt": "The highlighted spans are:\n{HLIST}\n\nAnswer:\n{CoT_CLUSTERING}",
+    "answer_clustering-CoT_prompt_intermediate": "{CHAINS_CLUSTERING}\nSo, the highlighted spans are clustered as follows:\n{CLUSTERS}",
+    "answer_clustering-CoT_format": "Highlights {COT_HCLUSTER} talk about {COT_HCLUSTER_TOPIC}.\n",
+    "answer_clustering_format": "{\"cluster\":[{HCLUSTER}]}",
+    "answer_content_selection_prompt": "Answer:\n{HDOCS}",
+    "answer_content_selection_format": "Document [{ID}]: {CONTENT_LIST}",
+    "answer_next_cluster_fusion_prompt": "The highlighted spans are:\n{HLIST}\n\nAnswer: The next sentence is: {NEXT_SENT}",
+    "answer_e2e_only_setting_prompt": "Answer: {RESP}",
+    "answer_ALCE_prompt": "Answer: {ALCE_RESP}",
+    "answer_ALCE_format": "{ALCE_SENT} {ALCE_CITATIONS}",
+    "answer_iter_QA_blueprint_prompt": "Plan:\n{QA_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
+    "answer_iter_span_blueprint_prompt": "Plan:\n{SPAN_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
+    "answer_iter_QA_blueprint_format": "A: {BLUEPRINT_A} Q: {BLUEPRINT_Q}",
+    "answer_iter_span_blueprint_format": "Document [{ID}]: {CONTENT_LIST}",
+    "demos": [
+        {
+            "answer": "As of Tuesday, Katrina's death toll had reached 1121 including 885 in Louisiana. Following the hurricane, which has struck the Gulf region between August 28th and 29th, 118 countries sent aid, including $2.5 million from Turkey. Agricultural losses in the United States were estimated at $900 million. U.S. industrial output rose only slightly because of cuts in the production of chemicals in the Gulf region.",
+            "docs": [
+                {
+                    "text": "{HS}Agricultural losses from Hurricane Katrina in the United States are expected to reach an estimated 900 million dollars{HE}, US Agriculture Secretary Mike Johanns said Tuesday.",
+                    "shorter_text": "{HS}Agricultural losses from Hurricane Katrina in the United States are expected to reach an estimated 900 million dollars{HE}, US Agriculture Secretary Mike Johanns said Tuesday."
+                },
+                {
+                    "text": "{HS}U.S. industrial output rose only slightly{HE} in August as {HS}Hurricane Katrina severely cut back production of{HE} petroleum and {HS}chemicals along the Gulf of Mexico coast{HE}. The Federal Reserve reported Wednesday that industrial output rose a tiny 0.1 percent last month _ far below economists' expectations _ as {HS}Katrina, which struck the Gulf Coast on Aug. 28{HE}, forced sharp cutbacks in oil and natural gas extraction in the Gulf of Mexico and also depressed output at refineries and chemical plants in the areas hit by the hurricane.",
+                    "shorter_text": "{HS}U.S. industrial output rose only slightly{HE} in August as {HS}Hurricane Katrina severely cut back production of{HE} petroleum and {HS}chemicals along the Gulf of Mexico coast{HE}. The Federal Reserve reported Wednesday that industrial output rose a tiny 0.1 percent last month _ far below economists' expectations _ as {HS}Katrina, which struck the Gulf Coast on Aug. 28{HE}, forced sharp cutbacks in oil and natural gas extraction in the Gulf of Mexico and also depressed output at refineries and chemical plants in the areas hit by the hurricane."
+                },
+                {
+                    "text": "{HS}Turkey has allocated 2.5 million dollars to contribute to relief efforts{HE} after Hurricane Katrina devastated the US Gulf Coast, the foreign ministry announced Tuesday. The statement said 1.5 million dollars was sent to the US Red Cross and the remaining funds would be spent on humanitarian supplies to be dispatched to the United States in the coming days. Washington said Monday that {HS}118 countries have provided aid to victims of Hurricane Katrina{HE}, which claimed at least 513 lives.",
+                    "shorter_text": "{HS}Turkey has allocated 2.5 million dollars to contribute to relief efforts{HE} after Hurricane Katrina devastated the US Gulf Coast, the foreign ministry announced Tuesday. The statement said 1.5 million dollars was sent to the US Red Cross and the remaining funds would be spent on humanitarian supplies to be dispatched to the United States in the coming days. Washington said Monday that {HS}118 countries have provided aid to victims of Hurricane Katrina{HE}, which claimed at least 513 lives."
+                },
+                {
+                    "text": "{HS}The death toll from Hurricane Katrina rose to 1,121 Tuesday{HE} as 44 more bodies were found in Louisiana, authorities said. The Department of Health and Hospitals said {HS}at least 885 people had died in Louisiana since the August 29 storm struck the Gulf Coast.{HE} Officials in Mississippi said 220 people had died in that state. Another 14 people were killed in Florida and two in Alabama, according to officials. Rescuers continued to search for Katrina victims as the death toll from its successor, Hurricane Rita, which struck on Saturday, rose to at least 10.",
+                    "shorter_text": "{HS}The death toll from Hurricane Katrina rose to 1,121 Tuesday{HE} as 44 more bodies were found in Louisiana, authorities said. The Department of Health and Hospitals said {HS}at least 885 people had died in Louisiana since the August 29 storm struck the Gulf Coast.{HE}"
+                }
+            ],
+            "planning": [
+                {
+                    "output": "As of Tuesday, Katrina's death toll had reached 1121 including 885 in Louisiana.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 4,
+                            "highlights": [8,9],
+                            "relative_highlights": [1,2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the death toll from Katrina",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What was the total death toll from Hurricane Katrina as of Tuesday?",
+                            "a": "1,121"
+                        },
+                        {
+                            "q": "How many people died in Louisiana since the August 29 storm struck the Gulf Coast?",
+                            "a": "885"
+                        }
+                    ]
+                },
+                {
+                    "output": "Following the hurricane, which has struck the Gulf region between August 28th and 29th, 118 countries sent aid, including $2.5 million from Turkey.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [5],
+                            "relative_highlights": [4]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [6,7],
+                            "relative_highlights": [1,2]
+                        },
+                        {
+                            "doc": 4,
+                            "highlights": [9],
+                            "relative_highlights": [2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the aid that was sent following Katrina and the time the hurricane struck",
+                    "blueprint_QAs": [
+                        {
+                            "q": "When did Hurricane Katrina struck the Gulf Coast?",
+                            "a": "Between August 28th and August 29th"
+                        },
+                        {
+                            "q": "How much money did Turkey allocate for relief efforts following Hurricane Katrina?",
+                            "a": "2.5 million dollars"
+                        },
+                        {
+                            "q": "How many countries provided aid to the victims of Hurricane Katrina?",
+                            "a": "118 countries"
+                        }
+                    ]
+                },
+                {
+                    "output": "Agricultural losses in the United States were estimated at $900 million.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [1],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the agricultural losses resulting from Katrina",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What is the estimated cost of agricultural losses in the United States due to Hurricane Katrina?",
+                            "a": "900 million dollars"
+                        }
+                    ]
+                },
+                {
+                    "output": "U.S. industrial output rose only slightly because of cuts in the production of chemicals in the Gulf region.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [2,3,4],
+                            "relative_highlights": [1,2,3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Katrina's impact on the U.S. industry",
+                    "blueprint_QAs": [
+                        {
+                            "q": "In which specific industries did Hurricane Katrina cause sharp cutbacks?",
+                            "a": "chemicals-related industries along the Gulf of Mexico coast"
+                        }
+                    ]
+                }                                
+            ]
+        },
+        {
+            "answer": "Financial contributions for Asian Tsunami relief had exceeded $10 billion.  Governmental contributions passed $8 billion while private gifts exceeded $2 billion. The United Nations announced on Tuesday that it has secured aid commitments worth $717 million. Governmental contributions were led by Japan with $250m. Individual contributors were led by a Canadian couple Kroum and Eva Pindoff who gave $4.1m through the Canadian Red Cross which will be matched by the Canadian government to total $8.2m.",
+            "docs": [
+                {
+                    "text": "{HS}The United Nations said Tuesday it had secured aid commitments worth 717 million dollars towards its appeal for emergency relief after the Indian Ocean tsunami disaster{HE}. {HS}The largest contribution came from Japan which pledged 250 million dollars{HE}, the UN's emergency relief coordinator Jan Egeland said here after a conference grouping donor nations and aid agencies. \"It's money in the mail, it will be there within days,\" Egeland said. Following is a list of the main contributors, as named by the UN official, specifically to the appeal launched last week for 977 million dollars. It does not include aid promised for other parts of the huge tsunami relief operation, which amounts to some {HS}eight billion dollars in total{HE}. {HS}Japan: 250 million dollars{HE} Britain: 74 million Germany: 68 million Norway: 65 million European Commission: 61 million United States: 35 million Canada: 29 million Sweden: 23 million Denmark: 22 million Russia: 22 million China: 20 million Australia: 14 million Finland: 13 million Others: 21 million",
+                    "shorter_text": "{HS}The United Nations said Tuesday it had secured aid commitments worth 717 million dollars towards its appeal for emergency relief after the Indian Ocean tsunami disaster{HE}. {HS}The largest contribution came from Japan which pledged 250 million dollars{HE}, the UN's emergency relief coordinator Jan Egeland said here after a conference grouping donor nations and aid agencies. \"It's money in the mail, it will be there within days,\" Egeland said. Following is a list of the main contributors, as named by the UN official, specifically to the appeal launched last week for 977 million dollars. It does not include aid promised for other parts of the huge tsunami relief operation, which amounts to some {HS}eight billion dollars in total{HE}. {HS}Japan: 250 million dollars{HE} Britain: 74 million Germany: 68 million Norway: 65 million"
+                },
+                {
+                    "text": "{HS}Public and private aid pledged worldwide for the countries hit by the Asian tsunami disaster has surpassed 10 billion dollars{HE}, according to an AFP tally. The figure includes government pledges and donations made by 42 countries, as well as debt relief and loans. According to the AFP tally, {HS}public aid made by governments totals slightly more than eight billion dollars{HE} and {HS}private donations amounted to over two billion dollars{HE}.",
+                    "shorter_text": "{HS}Public and private aid pledged worldwide for the countries hit by the Asian tsunami disaster has surpassed 10 billion dollars{HE}, according to an AFP tally. The figure includes government pledges and donations made by 42 countries, as well as debt relief and loans. According to the AFP tally, {HS}public aid made by governments totals slightly more than eight billion dollars{HE} and {HS}private donations amounted to over two billion dollars{HE}."
+
+                },
+                {
+                    "text": "{HS}A Canadian couple{HE} on Monday {HS}stunned the Canadian Red Cross by handing over a donation of five million Canadian dollars (4.1 million US) for the tsunami relief effort in South Asia.{HE} Their {HS}offer will be worth 10 million dollars (8.2 million US) under the Canadian government's scheme to match all private donations to approved aid agencies{HE} in the wake of the December 26 disaster. The gift, by {HS}Kroum and Eva Pindoff{HE}, who made their fortune by founding the record retailer Music World, is the largest-ever gift to the Canadian Red Cross during a disaster appeal, the organisation said. The couple pledged 100,000 Canadian dollars (82,000 dollars US) for tsunami relief on Friday, but after reflecting on the disaster, decided to do much more. \"After seeing more stark images of this tremendous tragedy and misery, my wife and I were up most of the night, grief-stricken,\" Kroum Pindoff said. \"We wanted to help alleviate the suffering, and decided we had to make a more substantial gift.\"",
+                    "shorter_text": "{HS}A Canadian couple{HE} on Monday {HS}stunned the Canadian Red Cross by handing over a donation of five million Canadian dollars (4.1 million US) for the tsunami relief effort in South Asia.{HE} Their {HS}offer will be worth 10 million dollars (8.2 million US) under the Canadian government's scheme to match all private donations to approved aid agencies{HE} in the wake of the December 26 disaster. The gift, by {HS}Kroum and Eva Pindoff{HE}, who made their fortune by founding the record retailer Music World, is the largest-ever gift to the Canadian Red Cross during a disaster appeal, the organisation said."
+                }
+            ],
+            "planning": [
+                {
+                    "output": "Financial contributions for Asian Tsunami relief had exceeded $10 billion.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [5],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the overall financial contribution for countries hit by the Asian tsunami",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What is the total amount of aid pledged worldwide for the countries affected by the Asian tsunami disaster?",
+                            "a": "10 billion dollars"
+                        }
+                    ]
+                },
+                {
+                    "output": "Governmental contributions passed $8 billion while private gifts exceeded $2 billion.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [3],
+                            "relative_highlights": [3]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [6,7],
+                            "relative_highlights": [2,3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the specific private and public contributions",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How much of the total aid for the Asian tsunami disaster comes from government pledges?",
+                            "a": "eight billion dollars"
+                        },
+                        {
+                            "q": "What is the amount of private donations contributed to the Asian tsunami disaster relief?",
+                            "a": "over two billion dollars"
+                        }
+                    ]
+                },
+                {
+                    "output": "The United Nations announced on Tuesday that it has secured aid commitments worth $717 million.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [1],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the United Nation's contribution",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How much did the United Nations secure in aid commitments for its appeal for emergency relief after the Indian Ocean tsunami disaster?",
+                            "a": "717 million dollars"
+                        },
+                        {
+                            "q": "When did the United Nations announce how much aid commitments it secured?",
+                            "a": "Tuesday"
+                        }
+                    ]
+                },
+                {
+                    "output": "Governmental contributions were led by Japan with $250m.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [2,4],
+                            "relative_highlights": [2,4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Japan's contribution",
+                    "blueprint_QAs": [
+                        {
+                            "q": "Which country made the largest contribution?",
+                            "a": "Japan"
+                        },
+                        {
+                            "q": "How much did Japan contribute?",
+                            "a": "250 million dollars"
+                        }
+                    ]
+                },
+                {
+                    "output": "Individual contributors were led by a Canadian couple Kroum and Eva Pindoff who gave $4.1m through the Canadian Red Cross which will be matched by the Canadian government to total $8.2m.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 3,
+                            "highlights": [8,9,10,11],
+                            "relative_highlights": [1,2,3,4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the private contribution of Kroum and Eva Pindoff",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How much did a Canadian couple donate to the Canadian Red Cross for the tsunami relief effort in South Asia?",
+                            "a": "4.1 million US dollars"
+                        },
+                        {
+                            "q": "What will be the total value of the Canadian couple's donation under the Canadian government's matching scheme?",
+                            "a": "Under the Canadian government's scheme to match all private donations to approved aid agencies, the couple's offer will be worth 10 million dollars (8.2 million US dollars)."
+                        },
+                        {
+                            "q": "Who are the Canadian couple that made the record-breaking donation to the Canadian Red Cross?",
+                            "a": "Kroum and Eva Pindoff"
+                        }
+                    ]
+                }                  
+            ]
+        },
+        {
+            "answer": "An open-air requiem mass was held for Pope John Paul II in St. Peter's Square, Rome from 10am to 12:30 pm on Friday. As the mass ended, lengthy applause broke out from the enormous throng of mourners and state leaders. The body, in a plain cypress wooden coffin, was laid to rest in the crypt of St.Peter's Basilica following the funeral.",
+            "docs": [
+                {
+                    "text": "{HS}The funeral ceremony for Pope John Paul II began Friday at 10:00am in Saint Peter's Square in front of a seething mass of mourners{HE} and state leaders. Applause broke out as the {HS}plain cypress wood coffin{HE} was borne out of Saint Peter's Basilica by 12 bearers in black and placed on a small dais before the altar. Dignitaries from around the world stood in respect as the coffin was placed at the heart of the altar. A red-bound New Testament was opened and placed on top of the coffin, its pages flickering in the wind, as funereal music played and Catholic prelates took their seats.",
+                    "shorter_text": "{HS}The funeral ceremony for Pope John Paul II began Friday at 10:00am in Saint Peter's Square in front of a seething mass of mourners{HE} and state leaders. Applause broke out as the {HS}plain cypress wood coffin{HE} was borne out of Saint Peter's Basilica by 12 bearers in black and placed on a small dais before the altar."
+                },
+                {
+                    "text": "{HS}The requiem mass for Pope John Paul II ended Friday at 12:30 pm{HE} (1030 GMT), {HS}drawing lengthy applause from the huge throng of mourners and state leaders massed on Saint Peter's Square.{HE} Vatican officials said that {HS}after the funeral, the body of Pope John Paul II was laid to rest in the crypt of Saint Peter's basilica.{HE}",
+                    "shorter_text": "{HS}The requiem mass for Pope John Paul II ended Friday at 12:30 pm{HE} (1030 GMT), {HS}drawing lengthy applause from the huge throng of mourners and state leaders massed on Saint Peter's Square.{HE} Vatican officials said that {HS}after the funeral, the body of Pope John Paul II was laid to rest in the crypt of Saint Peter's basilica.{HE}"
+                },
+                {
+                    "text": "Several hundred people of all faiths prayed Friday evening at Warsaw synagogue for Polish-born Pope John Paul II, who was laid to rest in Rome. The ecumenical prayer service was led by the Grand Rabbi of Poland, Michael Schudrich, Poland's PAP news agency said. \"In his lifetime, John Paul II worked to unite people. We are all the children of God and a few hours ago, down there (in Rome) it worked -- we were really united,\" Schudrich told the gathering. Schudrich had taken part in {HS}John Paul II's funeral in Rome earlier Friday{HE}. Warsaw's Jewish community numbers some 400 people. Before World War II the Polish capital had the second largest urban Jewish community in the world after New York City. Schudrich has estimated the number of Jews living in Poland at between 30,000 and 40,000 -- only a fraction of the pre-war number of around 3.5 million.",
+                    "shorter_text": "Several hundred people of all faiths prayed Friday evening at Warsaw synagogue for Polish-born Pope John Paul II, who was laid to rest in Rome. The ecumenical prayer service was led by the Grand Rabbi of Poland, Michael Schudrich, Poland's PAP news agency said. \"In his lifetime, John Paul II worked to unite people. We are all the children of God and a few hours ago, down there (in Rome) it worked -- we were really united,\" Schudrich told the gathering. Schudrich had taken part in {HS}John Paul II's funeral in Rome earlier Friday{HE}."
+                }
+            ],
+            "planning": [
+                {
+                    "output": "An open-air requiem mass was held for Pope John Paul II in St. Peter's Square, Rome from 10am to 12:30 pm on Friday.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [1],
+                            "relative_highlights": [1]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [3],
+                            "relative_highlights": [1]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [6],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the time and place of the funeral ceremony for Pope John Paul II",
+                    "blueprint_QAs": [
+                        {
+                            "q": "When did the funeral ceremony for Pope John Paul II begin?",
+                            "a": "Friday at 10:00am"
+                        },
+                        {
+                            "q": "At what time did the requiem mass for Pope John Paul II end?",
+                            "a": "Friday at 12:30 pm"
+                        },
+                        {
+                            "q": "Where did the funeral ceremony for Pope John Paul II take place?",
+                            "a": "in Saint Peter's Square"
+                        },
+                        {
+                            "q": "In which city John Paul II's funeral",
+                            "a": "Rome"
+                        }
+                    ]
+                },
+                {
+                    "output": "As the mass ended, lengthy applause broke out from the enormous throng of mourners and state leaders.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [4],
+                            "relative_highlights": [2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the applause that took place after the mass was over",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What was the reaction of the crowd on Saint Peter's Square after the requiem mass?",
+                            "a": "there was lengthy applause from the large crowd of mourners and state leaders gathered on Saint Peter's Square after the requiem mass"
+                        }
+                    ]
+                },
+                {
+                    "output": "The body, in a plain cypress wooden coffin, was laid to rest in the crypt of St.Peter's Basilica following the funeral.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [2],
+                            "relative_highlights": [2]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [5],
+                            "relative_highlights": [3]
+                        }                        
+                    ],
+                    "cluster_CoT_topic": "the details of how and where Pope John Paul II was buried",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What was distinctive about Pope John Paul II's coffin during the funeral ceremony?",
+                            "a": "it was a plain cypress wood coffin"
+                        },
+                        {
+                            "q": "What happened to Pope John Paul II's body after the funeral?",
+                            "a": "it was laid to rest in the crypt of Saint Peter's Basilica"
+                        }
+                    ]
+                }                
+            ]
+        },
+        {
+            "answer": "The Columbian Navy captured a member of the rebel group, Revolutionary Armed Forces of Columbia (FARC), who was believed to be involved in slaughtering five members of the same family. US warned US citizens in Columbia on Wednesday of a possible spike in \"terrorist activity\". FARC, with about 17,000 fighters and a smaller leftist guerilla group are locked in a 40-year civil war with the government. FARC allegedly finances itself through drug trafficking and kidnappings. About 3,500 people are killed yearly.",
+            "docs": [
+                {
+                    "text": "{HS}The United States on Wednesday warned US citizens of a possible spike in \"terrorist activity\" in Colombia{HE} in the coming week as the left-wing Revolutionary Armed Forces of Colombia (FARC) mark the one-year anniversary of the death of one of their commanders. The State Department, through the US embassy in Bogota, urged Americans in Colombia to boost their security precautions ahead of the October 19 anniversary of the death of Edgar Gustavo Navarro, believed to have been responsible for the taking of three US hostages in February 2003. \"The embassy wishes to inform American citizens throughout Colombia of the possibility of increased terrorist activity in connection with the upcoming October 19 Anniversary of a FARC leader's death,\" it said. \"Americans are urged to maintain a heightened level of vigilance and to continue practicing good security measures during this time,\" it said in a notice to US citizens, a copy of which was provided to AFP in Washington by the State Department. Navarro, who was killed in combat last year, is thought by Colombian authorities to have been behind the abduction of the three Americans -- Marc Gonsalves, Thomas Howes and Keith Stansell -- after their anti-drug flight crashed in a FARC stronghold in the Colombian Amazon. The trio remain in captivity despite a five-million-dollar US reward for information leading to their release and an August offer from Colombian President Alvaro Uribe to swap 50 imprisoned rebels for their freedom along with that of 22 politicians and 34 soldiers and police officers held by the FARC. {HS}The FARC with about 17,000 fighters and a smaller leftist guerrilla group{HE}, the National Liberation Army (ELN) with some 6,000 members, {HS}have been locked in a 40-year civil war{HE} against the Colombian government. The conflict has claimed more than 200,000 lives. Both groups, along with the right-wing paramilitary United Self Defense Force of Colombia (AUC), are designated \"foreign terrorist organizations\" by the United States and subject to US sanctions.",
+                    "shorter_text": "{HS}The United States on Wednesday warned US citizens of a possible spike in \"terrorist activity\" in Colombia{HE} in the coming week as the left-wing Revolutionary Armed Forces of Colombia (FARC) mark the one-year anniversary of the death of one of their commanders. The State Department, through the US embassy in Bogota, urged Americans in Colombia to boost their security precautions ahead of the October 19 anniversary of the death of Edgar Gustavo Navarro, believed to have been responsible for the taking of three US hostages in February 2003. \"The embassy wishes to inform American citizens throughout Colombia of the possibility of increased terrorist activity in connection with the upcoming October 19 Anniversary of a FARC leader's death,\" it said. \"Americans are urged to maintain a heightened level of vigilance and to continue practicing good security measures during this time,\" it said in a notice to US citizens, a copy of which was provided to AFP in Washington by the State Department. Navarro, who was killed in combat last year, is thought by Colombian authorities to have been behind the abduction of the three Americans -- Marc Gonsalves, Thomas Howes and Keith Stansell -- after their anti-drug flight crashed in a FARC stronghold in the Colombian Amazon. The trio remain in captivity despite a five-million-dollar US reward for information leading to their release and an August offer from Colombian President Alvaro Uribe to swap 50 imprisoned rebels for their freedom along with that of 22 politicians and 34 soldiers and police officers held by the FARC. {HS}The FARC with about 17,000 fighters and a smaller leftist guerrilla group{HE}, the National Liberation Army (ELN) with some 6,000 members, {HS}have been locked in a 40-year civil war{HE} against the Colombian government."
+                },
+                {
+                    "text": "Colombia's hardline government said Friday it is willing to meet with members of the country's main leftist rebel group in an unprecedented offer aimed at freeing dozens of rebel hostages, including three Americans. Before any face-to-face meeting can take place, however, the rebels must agree to swap 15 hostages for 15 rebels jailed on minor charges, said Peace Commissioner Luis Carlos Restrepo. Despite mistrust on both sides, Restrepo said the government is willing to release the 15 jailed rebels first, provided the rebel Revolutionary Armed Forces of Colombia, or FARC, at least expresses a willingness to reciprocate. The FARC's hostages include politicians, police officers, soldiers and three U.S. contractors whose small plane crashed in rebel-held territory early last year. Restrepo said the government would allow the Red Cross to escort to the capital any FARC members taking part in the talks and would return them home when the talks end, accompanied by the Roman Catholic Church representatives. Augusto Castro, vice president of the Catholic Church's ruling body in Colombia, said he hopes the FARC reacts positively to the offer. \"This proposal addresses the need to find a solution at a time when we are all concerned about being on a street with no exits,\" said Castro. {HS}The FARC and a smaller rebel group have been battling a succession of elected governments in this Andean nation for 40 years{HE}.",
+                    "shorter_text": "Colombia's hardline government said Friday it is willing to meet with members of the country's main leftist rebel group in an unprecedented offer aimed at freeing dozens of rebel hostages, including three Americans. Before any face-to-face meeting can take place, however, the rebels must agree to swap 15 hostages for 15 rebels jailed on minor charges, said Peace Commissioner Luis Carlos Restrepo. Despite mistrust on both sides, Restrepo said the government is willing to release the 15 jailed rebels first, provided the rebel Revolutionary Armed Forces of Colombia, or FARC, at least expresses a willingness to reciprocate. The FARC's hostages include politicians, police officers, soldiers and three U.S. contractors whose small plane crashed in rebel-held territory early last year. Restrepo said the government would allow the Red Cross to escort to the capital any FARC members taking part in the talks and would return them home when the talks end, accompanied by the Roman Catholic Church representatives. Augusto Castro, vice president of the Catholic Church's ruling body in Colombia, said he hopes the FARC reacts positively to the offer. \"This proposal addresses the need to find a solution at a time when we are all concerned about being on a street with no exits,\" said Castro. {HS}The FARC and a smaller rebel group have been battling a succession of elected governments in this Andean nation for 40 years{HE}."
+                },
+                {
+                    "text": "{HS}Five members of a Colombian family were killed{HE} and another one injured in a deep night attack, which police said on Saturday was conducted by the country's largest rebel group FARC. The family was attacked Friday night by eight armed men dressed up as civilians in Colombia's Sucre department, local police commander Colonel Carlos Millan said. Four women, including one with four-month pregnancy, and one man were killed in the attack and another one injured on legs, Millan said. He said Front 35, a rebel group belonging to the FARC, did the attack. According to press reports, two of the killed women, aged 21 and 26, were girl friends of local police staff. The FARC, with 20,000 combatants, is the country's largest and oldest rebel organization and {HS}allegedly finances itself through drug trafficking and kidnappings.{HE} Colombia has been plagued by a {HS}four-decade civil war{HE}, in which leftist rebels, far-right paramilitary and government troops fight each other, {HS}killing 3,500 people every year.{HE}",
+                    "shorter_text": "{HS}Five members of a Colombian family were killed{HE} and another one injured in a deep night attack, which police said on Saturday was conducted by the country's largest rebel group FARC. The family was attacked Friday night by eight armed men dressed up as civilians in Colombia's Sucre department, local police commander Colonel Carlos Millan said. Four women, including one with four-month pregnancy, and one man were killed in the attack and another one injured on legs, Millan said. He said Front 35, a rebel group belonging to the FARC, did the attack. According to press reports, two of the killed women, aged 21 and 26, were girl friends of local police staff. The FARC, with 20,000 combatants, is the country's largest and oldest rebel organization and {HS}allegedly finances itself through drug trafficking and kidnappings.{HE} Colombia has been plagued by a {HS}four-decade civil war{HE}, in which leftist rebels, far-right paramilitary and government troops fight each other, {HS}killing 3,500 people every year.{HE}"
+
+                },
+                {
+                    "text": "{HS}The Colombian Navy has captured a member of the rebel Revolutionary Armed Forces of Colombia (FARC){HE}, who was believed to be involved in the slaughtering of five members of the same family, authorities said Wednesday. The rebel was identified as Willinton Quiroz, also known as \" Juan Carlos,\" of Front 35 of the FARC. Quiroz was also wanted for crimes of rebellion and terrorism, said the Navy. The slaughter occurred last Friday night in the rural area of Coloso in northern Sucre province. Several armed men broke into houses inhabited by the same family. Among the victims were the girl friends of a police agent and a soldier. One victim was pregnant for four months. The FARC, the largest guerrilla force in Colombia, is accused of committing selective murders and slaughters, as well as terrorist acts in different parts of the South American country.",
+                    "shorter_text": "{HS}The Colombian Navy has captured a member of the rebel Revolutionary Armed Forces of Colombia (FARC){HE}, who was believed to be involved in the slaughtering of five members of the same family, authorities said Wednesday."
+                },
+                {
+                    "text": "The office of the UN High Commissioner for Human Rights on Thursday condemned {HS}the killing of five members of the same family{HE} in north Colombia last Friday, local press said. The UN office demanded the rebel Revolutionary Armed Forces of Colombia (FARC) clarify whether it was responsible for the crime. It also asked the group to ensure strict compliance of its members with international humanitarian law. Five members of the same family, four of them women, were murdered last Friday by armed individuals who broke into their house in Coloso in the northern Sucre province. One of the victims was pregnant for four months. Two others were girl friends of a soldier and a police agent of the area. The Sucre authorities blamed FARC guerrillas for the killing, who has not yet claimed responsibility. The UN office believed the women were murdered because of their relationship with law enforcement officers. The Colombian authorities on Wednesday captured a FARC member who was suspected of being involved in the Coloso killing. The FARC, with 17,000 members, is the country's largest and oldest rebel organization. Colombia has been plagued by a {HS}four-decade civil war{HE}, in which leftist rebels, far-right paramilitaries and government troops fight each other, killing about 3,500 people every year.",
+                    "shorter_text": "The office of the UN High Commissioner for Human Rights on Thursday condemned {HS}the killing of five members of the same family{HE} in north Colombia last Friday, local press said. The UN office demanded the rebel Revolutionary Armed Forces of Colombia (FARC) clarify whether it was responsible for the crime. It also asked the group to ensure strict compliance of its members with international humanitarian law. Five members of the same family, four of them women, were murdered last Friday by armed individuals who broke into their house in Coloso in the northern Sucre province. One of the victims was pregnant for four months. Two others were girl friends of a soldier and a police agent of the area. The Sucre authorities blamed FARC guerrillas for the killing, who has not yet claimed responsibility. The UN office believed the women were murdered because of their relationship with law enforcement officers. The Colombian authorities on Wednesday captured a FARC member who was suspected of being involved in the Coloso killing. The FARC, with 17,000 members, is the country's largest and oldest rebel organization. Colombia has been plagued by a {HS}four-decade civil war{HE}, in which leftist rebels, far-right paramilitaries and government troops fight each other, killing about 3,500 people every year."
+                }
+            ],
+            "planning": [
+                {
+                    "output":"The Columbian Navy captured a member of the rebel group, Revolutionary Armed Forces of Columbia (FARC), who was believed to be involved in slaughtering five members of the same family.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 3,
+                            "highlights": [5],
+                            "relative_highlights": [1]
+                        },
+                        {
+                            "doc": 4,
+                            "highlights": [9],
+                            "relative_highlights": [1]
+                        },
+                        {
+                            "doc": 5,
+                            "highlights": [10],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the killing of five family members by a rebel group, and the consequent capturing of one of the group's members",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How many members of a Colombian family were killed?",
+                            "a": "five"
+                        },
+                        {
+                            "q": "Who was captured by the Colombian Navy?",
+                            "a": "a member of the rebel Revolutionary Armed Forces of Colombia (FARC)"
+                        }
+                    ]
+                },
+                {
+                    "output":"US warned US citizens in Columbia on Wednesday of a possible spike in \"terrorist activity\".",
+                    "highlights_cluster":[
+                        {
+                            "doc": 1,
+                            "highlights": [1],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "a US warning to its citizens",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What did the united states warn US citizens of?",
+                            "a": "a possible spike in \"terrorist activity\" in Colombia"
+                        },
+                        {
+                            "q": "When did the United States warn its citizens?",
+                            "a": "on Wednesday"
+                        }
+                    ]
+                },
+                {
+                    "output":"FARC, with about 17,000 fighters and a smaller leftist guerilla group are locked in a 40-year civil war with the government.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 1,
+                            "highlights": [2,3],
+                            "relative_highlights": [2,3]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [4],
+                            "relative_highlights": [1]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [7],
+                            "relative_highlights": [3]
+                        },
+                        {
+                            "doc": 5,
+                            "highlights": [11],
+                            "relative_highlights": [2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "two Colombian rebel groups and the civil war they are a part of",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How many fighters does FARC have?",
+                            "a": "17,000"
+                        },
+                        {
+                            "q": "Who has been engaged in a civil war with the Colombian government?",
+                            "a": "The FARC and a smaller rebel group"
+                        },
+                        {
+                            "q": "How long has the Colombian civil-war been going on?",
+                            "a": "40 years"
+                        }
+                    ]
+                },
+                {
+                    "output":"FARC allegedly finances itself through drug trafficking and kidnappings.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 3,
+                            "highlights": [6],
+                            "relative_highlights": [2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "how FARC finances itself",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How is FARC claimed to finance itself?",
+                            "a": "through drug trafficking and kidnappings"
+                        }
+                    ]
+                },
+                {
+                    "output":"About 3,500 people are killed yearly.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 3,
+                            "highlights": [8],
+                            "relative_highlights": [4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "how many people are killed yearly in the Colombian civil war",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How many people are killed every year in the Colombian civil war?",
+                            "a": "3,500"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

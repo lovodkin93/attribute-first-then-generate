@@ -1,0 +1,469 @@
+{
+    "instruction-e2e-only-setting": "Write an accurate, engaging, and concise answer for the given question using only the provided search results (some of which might be irrelevant).",
+    "instruction-ALCE": "Write an accurate, engaging, and concise answer for the given question using only the provided search results (some of which might be irrelevant) and cite them properly. Use an unbiased and journalistic tone. Always cite for any factual claim. When citing several search results, use [1][2][3]. Cite at least one document and at most three documents after each sentence. If multiple documents support the sentence, only cite a minimum sufficient subset of the documents.",
+    "instruction-FiC": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). Your job is to generate a coherent summary that covers all and only the \"highlighted\" spans. Make sure all highlights are included. Also, make sure there are at least two sentences in the output summary.",
+    "instruction-FiC-CoT": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). Your job is to generate a coherent summary that covers all and only the \"highlighted\" spans. Build the summary iteratively, where each time you cluster highlights to build the next sentence. Make sure all highlights are included, and that the output summary has at least two sentences. IMPORTANT: The clustering steps must be of the form: \"Highlights {comma-delimited highlights indices} are combined to form sentence {sentence_id}:{sentence_text}\". Additionally, before generating the final summary, say \"So the final answer is:\".",
+    "instruction-FiC-with-question": "In this task, you are presented with a question and several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). Those spans are supposed to have the information needed to answer the question. Your job is to generate a coherent paragraph that answers the question, while covering all and only the \"highlighted\" spans. Make sure all highlights are included. Also, make sure there are at least two sentences in the output.",
+    "instruction-FiC-CoT-with-question": "In this task, you are presented with a question and several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). Those spans are supposed to have the information needed to answer the question. Your job is to generate a coherent paragraph that answers the question, while covering all and only the \"highlighted\" spans. Build this paragraph iteratively, where each time you cluster highlights to build the next sentence. Make sure all highlights are included, and that the output paragraph has at least two sentences. IMPORTANT: The clustering steps must be of the form: \"Highlights {comma-delimited highlights indices} are combined to form sentence {sentence_id}:{sentence_text}\". Additionally, before generating the final output paragraph, say \"So the final answer is:\".",
+    "instruction-clustering": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). The goal is to fuse all those highlights into a single summary. As an intermediate step, you need to cluster highlights that can be merged into a sentence (namely, each cluster will be later merged into one sentence). Make sure the clusters are in the same order you would then write the corresponding summary sentences. IMPORTANT: make sure there are at least two clusters. IMPORTANT: The output must be of the format [{\"cluster\":[comma-delimited highlights indices]}]",
+    "instruction-clustering-with-question": "In this task, you are presented with a question and several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). Those spans are supposed to have the information needed to answer the question, and the goal is to fuse all those highlights into a single paragraph that answers the question. As an intermediate step, you need to cluster highlights that can be merged into a sentence (namely, each cluster will be later merged into one sentence). Make sure the clusters are in the same order you would then write the corresponding output paragraph. IMPORTANT: make sure there are at least two clusters. IMPORTANT: The output must be of the format [{\"cluster\":[comma-delimited highlights indices]}]",
+    "instruction-content-selection": "In this task, you are presented with a question and several documents. The goal is to answer the question based on the given documents. As an intermediate step, you need to identify the minimal number of spans within the documents that answer the question. For each document, copy verbatim those spans, and use <SPAN_DELIM> as a delimiter between each consecutive span. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive spans. IMPORTANT: Each such span must be a single consecutive verbatim span from the corresponding passages. IMPORTANT: make sure the total number of copied words (from all passages) is around 100 words, and not more than 200.",
+    "instruction-next-cluster-fusion": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). You are also presented with a prefix of a paragraph. You job is to generate the next sentence in the paragraph, that covers all and only the \"highlighted\" spans. Make sure it connects well with the prefix, and that it covers all and only the \"highlighted\" spans.",
+    "instruction-next-cluster-fusion-with-question": "In this task, you are presented with a question and several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). You are also presented with a prefix of a paragraph. The goal is to generate a paragraph that answers the question, based on the passages. The given prefix is what you generated so far. You job is to generate the next sentence in the paragraph, that covers all and only the \"highlighted\" spans. Make sure it connects well with the prefix, that it covers all and only the \"highlighted\" spans, and that it properly builds towards a full and coherent response to the question.",
+    "instruction-iter-QA-blueprint": "In this task, you are presented with a question, several documents and a prefix. The goal is to answer the question based on the given documents. We will be building the output sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract a set of up to 5 question-answer pairs from the input documents that best describe the relevant information for the next sentence (acting as a plan), and then generate that sentence based on those question-answer pairs. IMORTANT: avoid redundancy compared to the prefix. IMORTANT: the output must be of the form: A: <ANSWER1> Q: <QUESTION1> ; A: <ANSWER2> Q: <QUESTION2> ; ... So the next sentence is: <NEXT_SENT>. IMPORTANT: if the prefix already properly answers the question, reply \"{BLUEPRINT_EOS}\".",
+    "instruction-iter-span-blueprint": "In this task, you are presented with a question, several documents and a prefix. The goal is to answer the question based on the given documents. We will be building the output sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract verbatim a set of relevant spans from the input documents that best describe the relevant information for the next sentence (acting as a plan), and use <SPAN_DELIM> as a delimiter between each consecutive span. Then, generate the next sentence based on those spans. IMORTANT: avoid redundancy compared to the prefix. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive spans. IMPORTANT: Each such span must be a single consecutive verbatim span from the corresponding passages. IMPORTANT: if the prefix already properly answers the question, reply \"{BLUEPRINT_EOS}\".",
+    "demo_sep": "\n\n\n",
+    "highlight_start_tkn":"<highlight_start>",
+    "highlight_end_tkn":"<highlight_end>",
+    "blueprint_eos": "STOP GENERATION",
+    "demo_prompt": "{INST}\n\n{D}\n{A}",
+    "demo_prompt_content_selection": "{INST}\n\nQuestion: {Q}\n\n{D}\n{A}",
+    "demo_prompt_next_cluster_fusion": "{INST}\n\n{D}\nPrefix:{PRFX}\n{A}",
+    "demo_prompt_next_cluster_fusion_with_question": "{INST}\n\nQuestion: {Q}\n\n{D}\nPrefix:{PRFX}\n{A}",
+    "demo_prompt_iter_blueprint": "{INST}\n\nQuestion: {Q}\n\n{D}\nPrefix:{PRFX}\nAnswer:\n{A}",
+    "doc_prompt": "Document [{ID}]: {P}\n",
+    "answer_FiC_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nSo the answer is: {CoT_RESP}",
+    "answer_FiC-CoT_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nThe highlighted spans are combined as follows:\n{PLANNING}",
+    "answer_FiC_planning_prompt":"{HFUSE}\n\nSo the final answer is: {SUMM}",
+    "answer_highlights_listing_prompt": "Document [{ID}]:\n{HLIST_DOC}\n",
+    "answer_highlights_fusion_prompt": "Highlights {HFUSE_SENT} are combined to form sentence {SENT_ID}: {SENT}\n",
+    "answer_clustering_prompt": "The highlighted spans are:\n{HLIST}\n\nAnswer: The highlighted spans are clustered as follows:\n{CLUSTERS}",
+    "answer_clustering-CoT_prompt": "The highlighted spans are:\n{HLIST}\n\nAnswer:\n{CoT_CLUSTERING}",
+    "answer_clustering-CoT_prompt_intermediate": "{CHAINS_CLUSTERING}\nSo, the highlighted spans are clustered as follows:\n{CLUSTERS}",
+    "answer_clustering-CoT_format": "Highlights {COT_HCLUSTER} talk about {COT_HCLUSTER_TOPIC}.\n",
+    "answer_clustering_format": "{\"cluster\":[{HCLUSTER}]}",
+    "answer_content_selection_prompt": "Answer:\n{HDOCS}",
+    "answer_content_selection_format": "Document [{ID}]: {CONTENT_LIST}",
+    "answer_next_cluster_fusion_prompt": "The highlighted spans are:\n{HLIST}\n\nAnswer: The next sentence is: {NEXT_SENT}",
+    "answer_e2e_only_setting_prompt": "Answer: {RESP}",
+    "answer_ALCE_prompt": "Answer: {ALCE_RESP}",
+    "answer_ALCE_format": "{ALCE_SENT} {ALCE_CITATIONS}",
+    "answer_iter_QA_blueprint_prompt": "Plan:\n{QA_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
+    "answer_iter_span_blueprint_prompt": "Plan:\n{SPAN_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
+    "answer_iter_QA_blueprint_format": "A: {BLUEPRINT_A} Q: {BLUEPRINT_Q}",
+    "answer_iter_span_blueprint_format": "Document [{ID}]: {CONTENT_LIST}",
+    "demos": [
+        {
+            "answer": "The name \"salt water taffy\" is believed to have originated in Atlantic City, New Jersey in the late 19th century. According to legend, a man named David Bradley had a candy shop that was flooded during a storm, and his entire stock of taffy became soaked with sea water from the Atlantic Ocean. Bradley then began to sell the salty taffy as \"salt water taffy\", and the name stuck.",
+            "question" : "where did the name salt water taffy come from",
+            "docs": [
+                {
+                    "title": "How Did Salt Water Taffy Get's it's Name?", 
+                    "text": "Believe it or not, some people think Salt Water Taffy is really made from a process using sea water, hence the name \"Salt Water Taffy\". The grain of truth is that it does take water and salt to make the taffy, but no seawater is used in the process. Thankfully! Fun Fact: Back in the 1880s you could get a bag of soft taffy for 5 cents. Try paying that for taffy now!Today salt water taffy is still popular in several beach resorts, including Ocean City, MD. Although you can order it online, salt water taffy is just one of those things that are much more enjoyable when bought off the boardwalk. So it's no surprise Ocean City tourists are always on the hunt for some salt water taffy when they come on vacation. So where did salt water taffy get it's name? {HS}There's a legend that in 1888, a man named David Bradley had a candy shop which got flooded during a storm.{HE} {HS}As a result his soft taffy got soaked in ocean salt water.{HE} A young girl came in his shop asking for taffy and he joked about only having salt water taffy. To his surprise, she was more than happy to buy the saltwater taffy! So {HS}they decided to sell the taffy as salt water taffy…and the rest as they say is history.{HE} Other's believe the more logical of the theories: that salt water taffy got its name simply because it was sold near the ocean. I personally think the former makes for a better story. What will you tell your kids next time you're on the Ocean City Boardwalk buying salt water taffy? By the way, if you're wondering where to find salt water taffy in Ocean City, MD try out Dolle's Candyland, Candy Kitchen, or Wockenfuss Candies (not named in any particular order).",
+                    "shorter_text": "Believe it or not, some people think Salt Water Taffy is really made from a process using sea water, hence the name \"Salt Water Taffy\". The grain of truth is that it does take water and salt to make the taffy, but no seawater is used in the process. Thankfully! Fun Fact: Back in the 1880s you could get a bag of soft taffy for 5 cents. Try paying that for taffy now!Today salt water taffy is still popular in several beach resorts, including Ocean City, MD. Although you can order it online, salt water taffy is just one of those things that are much more enjoyable when bought off the boardwalk. So it's no surprise Ocean City tourists are always on the hunt for some salt water taffy when they come on vacation. So where did salt water taffy get it's name? {HS}There's a legend that in 1888, a man named David Bradley had a candy shop which got flooded during a storm.{HE} {HS}As a result his soft taffy got soaked in ocean salt water.{HE} A young girl came in his shop asking for taffy and he joked about only having salt water taffy. To his surprise, she was more than happy to buy the saltwater taffy! So {HS}they decided to sell the taffy as salt water taffy…and the rest as they say is history.{HE}"
+                },
+                {
+                    "title": "Is Taffy Really Made With Salt Water?",
+                    "text": "Today's Wonder of the Day was inspired by becky. becky Wonders , \" how saltwater taffy is made \" Thanks for WONDERing with us, becky!Ahh… summertime! If you've ever spent time by an ocean, you've probably enjoyed walks on the beach, swimming in the surf, shopping along the boardwalk and, of course, eating sweet, sticky taffy !Salt water taffy is a tasty treat that's right at home in shops all along coastlines everywhere. If you've ever had a mouthful of seawater, though, you probably know that salt water taffy is sweet and doesn't taste anything like seawater. What's up with that? {HS}Salt water taffy was born along the boardwalks of Atlantic City, New Jersey, in the late 19th century.{HE} It quickly became a popular souvenir with visitors and eventually spread to many other coastal towns. Although taffy recipes vary from one candymaker to another, the most common ingredients in taffy are sugar, corn syrup, cornstarch, water, butter, salt, food coloring and flavorings. You may have noticed that the list of ingredients includes both salt and water.However, salt water taffy doesn't actually contain seawater. So how did it get its name?No one knows for sure how salt water taffy got its name, but {HS}one legend holds that it came from David Bradley, who owned a candy store{HE} in the late 19th century. The story goes that {HS}Bradley's candy store became flooded during a major storm{HE} in 1883. {HS}His entire stock of taffy became soaked with seawater from the Atlantic Ocean, so he began to call it \"salt water taffy \"{HE} as a joke.If you've ever seen taffy being made, you probably were fascinated by watching the taffy being pulled by a special machine. The pulling process is a critical part of making taffy .Without pulling, taffy would be very hard. Pulling taffy aerates it by capturing tons of tiny air bubbles within the taffy . These air bubbles make the taffy softer and chewy.Before special taffy -pulling machines were invented, candymakers would pull taffy with a simple hook attached to the wall . They would place a huge glob of taffy (10 to 25 pounds or more!) on the hook and then pull it five or six feet before folding it back on itself and throwing it back over the hook.They would repeat this process — it was quite a workout! — over and over again until the taffy became soft and chewy.No one knows for sure how many different flavors of taffy have been made. Since you can make taffy in just about any flavor , the answer would have to be in the hundreds.An online search for taffy will lead you to online stores with more than 150 different flavors of taffy , including gooseberry, jalapeno, chocolate marshmallow and cantaloupe!",
+                    "shorter_text": "Today's Wonder of the Day was inspired by becky. becky Wonders , \" how saltwater taffy is made \" Thanks for WONDERing with us, becky!Ahh… summertime! If you've ever spent time by an ocean, you've probably enjoyed walks on the beach, swimming in the surf, shopping along the boardwalk and, of course, eating sweet, sticky taffy !Salt water taffy is a tasty treat that's right at home in shops all along coastlines everywhere. If you've ever had a mouthful of seawater, though, you probably know that salt water taffy is sweet and doesn't taste anything like seawater. What's up with that? {HS}Salt water taffy was born along the boardwalks of Atlantic City, New Jersey, in the late 19th century.{HE} It quickly became a popular souvenir with visitors and eventually spread to many other coastal towns. Although taffy recipes vary from one candymaker to another, the most common ingredients in taffy are sugar, corn syrup, cornstarch, water, butter, salt, food coloring and flavorings. You may have noticed that the list of ingredients includes both salt and water.However, salt water taffy doesn't actually contain seawater. So how did it get its name?No one knows for sure how salt water taffy got its name, but {HS}one legend holds that it came from David Bradley, who owned a candy store{HE} in the late 19th century. The story goes that {HS}Bradley's candy store became flooded during a major storm{HE} in 1883. {HS}His entire stock of taffy became soaked with seawater from the Atlantic Ocean, so he began to call it \"salt water taffy \"{HE} as a joke."
+                }
+            ],
+            "planning": [
+                {
+                    "output": "The name \"salt water taffy\" is believed to have originated in Atlantic City, New Jersey in the late 19th century.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [4],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the place and time the name \"salt water taffy\" is believed to have originated from",
+                    "blueprint_QAs": [
+                        {
+                            "q": "Where was Salt water taffy born?", 
+                            "a": "along the boardwalks of Atlantic City, New Jersey"
+                        },
+                        {
+                            "q": "When was Salt water taffy born?",
+                            "a": "in the late 19th century"
+                        }
+                    ]
+                },
+                {
+                    "output": "According to legend, a man named David Bradley had a candy shop that was flooded during a storm, and his entire stock of taffy became soaked with sea water from the Atlantic Ocean.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [1,2],
+                            "relative_highlights": [1,2]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [5,6,7],
+                            "relative_highlights": [2,3,4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "David Bradley's shop being flooded, and his stock of taffy becaming soaked with sea water",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What happened to David Bradley according to the legend?",
+                            "a": "his candy shop which got flooded during a storm"
+                        },
+                        {
+                            "q": "What happened to David Bradley's taffy after his shot got flooded?",
+                            "a": "it got soaked in ocean salt water"
+                        }
+                    ]
+                },
+                {
+                    "output": "Bradley then began to sell the salty taffy as \"salt water taffy\", and the name stuck.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [3],
+                            "relative_highlights": [3]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [7],
+                            "relative_highlights": [4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the fact that David Bradley started to sell his soaked taffy as \"salt water taffy\"",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What did David Bradley do after his taffy got soaked in ocean salt water?",
+                            "a": "he began to sell it as \"salt water taffy\""
+                        }
+                    ]
+                }                             
+            ]
+        },
+        {
+            "answer": "The USPS does not run on President's Day , and all USPS branches and locations will be closed in observance of the holiday, with only priority packages being potentially delivered. However, UPS will still be delivering mail on this day, and its stores will be open. Yet, some delays in UPS services might be expected.",
+            "question" : "does the usps or ups mail run on president's day",
+            "docs": [
+                {
+                    "title": "Is the Post Office Open on Presidents Day?", 
+                    "text": "Marked as a time to honor U.S. presidents — past and present — the holiday falls on Monday, Feb. 20, this year. In a nod to George Washington, the country's first president, the holiday is also called Washington's Birthday.Most schools are closed in observance of Presidents Day, and some employers give their employees the day off from work.With that, you may be pondering the possibility of checking items off your to-do list. Do you need to hit Costco up for all of your buying-in-bulk needs? Well, shop away — it's open, as are many other major retailers.If you want to swing by the bank for anything other than an ATM transaction, it's likely you'll have to table it for later because many financial institutions are closed on the day.Perhaps, your mind drifts to returning a package or sending a letter. You may even be eyeing a special delivery. But that leads us to one important question: Is the post office open on Presidents Day? What about couriers like UPS, FedEx and DHL? Luckily, you won't have to dig around for the answers.Here's what you need to know about the post office's holiday hours. {HS}All United States Postal Service branches and locations will be closed{HE} on Monday, Feb. 20, {HS}in observance of Presidents Day, per USPS.com{HE} .Along with the closures, there will be no deliveries or services. Post offices will go back to business as usual on Tuesday, Feb. 21.USPS annually commemorates 11 federal holidays. The following dates are still on the docket for observance in 2023:- Memorial Day | Monday, May 29- Juneteenth | Monday, June 19- Independence Day | Tuesday, July 4- Labor Day | Monday, Sept. 4- Indigenous Peoples' Day | Monday, Oct. 9- Veterans Day | Saturday, Nov. 11- Thanksgiving Day | Thursday, Nov. 23- Christmas Day | Monday, Dec. 25Even though post offices are closed on Presidents Day, there are other places you can turn to. {HS}UPS will keep its store doors open while continuing pickup and delivery services on the holiday.{HE} The company noted its UPS SurePost and UPS Mail Innovations deliveries will take an extra day.FedEx ground and delivery services will continue operation as usual. Office locations will be open, too. However, FedEx Express and FedEx Ground Economy will run with modified services in light of Presidents Day.DHL will also keep its services up and running on the holiday, per its website .",
+                    "shorter_text": "Marked as a time to honor U.S. presidents — past and present — the holiday falls on Monday, Feb. 20, this year. In a nod to George Washington, the country's first president, the holiday is also called Washington's Birthday.Most schools are closed in observance of Presidents Day, and some employers give their employees the day off from work.With that, you may be pondering the possibility of checking items off your to-do list. Do you need to hit Costco up for all of your buying-in-bulk needs? Well, shop away — it's open, as are many other major retailers.If you want to swing by the bank for anything other than an ATM transaction, it's likely you'll have to table it for later because many financial institutions are closed on the day.Perhaps, your mind drifts to returning a package or sending a letter. You may even be eyeing a special delivery. But that leads us to one important question: Is the post office open on Presidents Day? What about couriers like UPS, FedEx and DHL? Luckily, you won't have to dig around for the answers.Here's what you need to know about the post office's holiday hours. {HS}All United States Postal Service branches and locations will be closed{HE} on Monday, Feb. 20, {HS}in observance of Presidents Day, per USPS.com{HE} .Along with the closures, there will be no deliveries or services. Post offices will go back to business as usual on Tuesday, Feb. 21.USPS annually commemorates 11 federal holidays. The following dates are still on the docket for observance in 2023:- Memorial Day | Monday, May 29- Juneteenth | Monday, June 19- Independence Day | Tuesday, July 4- Labor Day | Monday, Sept. 4- Indigenous Peoples' Day | Monday, Oct. 9- Veterans Day | Saturday, Nov. 11- Thanksgiving Day | Thursday, Nov. 23- Christmas Day | Monday, Dec. 25Even though post offices are closed on Presidents Day, there are other places you can turn to. {HS}UPS will keep its store doors open while continuing pickup and delivery services on the holiday.{HE}"
+                },
+                {
+                    "title": "Is the Post Office Open Today? Find Out If Mail Runs on Presidents' Day", 
+                    "text": "Today is a federal holiday, so don't expect to see the mail carrier.By Terri RobertsonToday is Presidents' Day , and if you have the day off, well, you and your mail carrier have something in common. That's because the third Monday in February is about more than mattress deals and other awesome Presidents' Day sales —it's also a federal holiday honoring George Washington, Abraham Lincoln, and other U.S. presidents, which means all non-essential government offices are closed.So, is there mail on Presidents' Day? you may be wondering. Before you venture out to your mailbox, here's what you need to know about how the holiday affects snail mail and other package delivery services, including UPS, FedEx, and Amazon Prime.No. {HS}Your local post office is on the list of what's closed on Presidents' Day{HE} , February 20, 2023. If you need assistance with posting a package, it will have to wait until tomorrow. Out of stamps? You can pick up a booklet of USPS Forever stamps at most grocery stories and many pharmacies, including CVS and Walgreens (as long as it's a major chain, it's most likely open ). And, of course, you can still drop your mail in those blue USPS collection boxes for pickup tomorrow.{HS}Regular USPS mail is not delivered on Presidents' Day.{HE} {HS}In some circumstances, priority packages will be delivered.{HE} If you're expecting something urgent, keep an eye on the tracking number. Otherwise, be on the lookout on Tuesday.{HS}UPS{HE}, FedEx, and Amazon are not government-owned companies, so {HS}for the most part Presidents' Day will be business as usual.{HE} You'll see their trucks and vans on the road, and {HS}UPS{HE} and FedEx {HS}stores will be open.{HE} But there are some minor exceptions:- {HS}Packages sent via UPS SurePost or UPS Mail Innovations will be delayed by one day due to Presidents' Day{HE}, according to UPS.com . Why? UPS works with USPS to provide these economy and high-volume services, so the federal holiday affects them.- Depending on your location, pickup times may be earlier for FedEx Express and FedEx Ground Economy, according FedEx.com .",
+                    "shorter_text": "Today is a federal holiday, so don't expect to see the mail carrier.By Terri RobertsonToday is Presidents' Day , and if you have the day off, well, you and your mail carrier have something in common. That's because the third Monday in February is about more than mattress deals and other awesome Presidents' Day sales —it's also a federal holiday honoring George Washington, Abraham Lincoln, and other U.S. presidents, which means all non-essential government offices are closed.So, is there mail on Presidents' Day? you may be wondering. Before you venture out to your mailbox, here's what you need to know about how the holiday affects snail mail and other package delivery services, including UPS, FedEx, and Amazon Prime.No. {HS}Your local post office is on the list of what's closed on Presidents' Day{HE} , February 20, 2023. If you need assistance with posting a package, it will have to wait until tomorrow. Out of stamps? You can pick up a booklet of USPS Forever stamps at most grocery stories and many pharmacies, including CVS and Walgreens (as long as it's a major chain, it's most likely open ). And, of course, you can still drop your mail in those blue USPS collection boxes for pickup tomorrow.{HS}Regular USPS mail is not delivered on Presidents' Day.{HE} {HS}In some circumstances, priority packages will be delivered.{HE} If you're expecting something urgent, keep an eye on the tracking number. Otherwise, be on the lookout on Tuesday.{HS}UPS{HE}, FedEx, and Amazon are not government-owned companies, so {HS}for the most part Presidents' Day will be business as usual.{HE} You'll see their trucks and vans on the road, and {HS}UPS{HE} and FedEx {HS}stores will be open.{HE} But there are some minor exceptions:- {HS}Packages sent via UPS SurePost or UPS Mail Innovations will be delayed by one day due to Presidents' Day{HE}, according to UPS.com ."
+                },
+                {
+                    "title": "Is There Mail Today, February 20, 2023?", 
+                    "text": "Needing to run some errands today? Remember, {HS}it's Presidents' Day!{HE} February 20, 2023 marks a federal holiday in the United States, which means many businesses will be closed. The day is meant to honor and remember the contributions of past American presidents, particularly George Washington and Abraham Lincoln, who are often considered to be two of the most important figures in American history.It's important for people to plan ahead and run their errands early in the weekend leading up to Presidents' Day. Many companies, government offices, and banks will be closed on the holiday, which means that it may be difficult to take care of certain tasks.By planning ahead, you can ensure that you have everything you need to enjoy the holiday without any unnecessary stress or inconvenience. And if you're expecting a special package in the mail or want a letter to get to someone on time, you're likely wondering if there will even be mail today. Should you go out and check the mailbox on Presidents' Day or try again tomorrow? {HS}Because it's a federal holiday, USPS will not be delivering mail today.{HE} Post offices will not be open either if you were planning to visit your local office. Unfortunately, that means all your mail will be delayed, but the good news is it's only for one day. USPS will be back to delivering mail tomorrow, Tuesday, February 21.If you're expecting a package through Amazon, {HS}UPS{HE}, or FedEx, on the other hand, they are all {HS}expected to be in service today despite the holiday.{HE} So you might receive what you've been waiting for in the mail today after all! As for regular mail, though, you'll have to wait a day.We're wishing everyone a happy and healthy Presidents' Day!",
+                    "shorter_text": "Needing to run some errands today? Remember, {HS}it's Presidents' Day!{HE} February 20, 2023 marks a federal holiday in the United States, which means many businesses will be closed. The day is meant to honor and remember the contributions of past American presidents, particularly George Washington and Abraham Lincoln, who are often considered to be two of the most important figures in American history.It's important for people to plan ahead and run their errands early in the weekend leading up to Presidents' Day. Many companies, government offices, and banks will be closed on the holiday, which means that it may be difficult to take care of certain tasks.By planning ahead, you can ensure that you have everything you need to enjoy the holiday without any unnecessary stress or inconvenience. And if you're expecting a special package in the mail or want a letter to get to someone on time, you're likely wondering if there will even be mail today. Should you go out and check the mailbox on Presidents' Day or try again tomorrow? {HS}Because it's a federal holiday, USPS will not be delivering mail today.{HE} Post offices will not be open either if you were planning to visit your local office. Unfortunately, that means all your mail will be delayed, but the good news is it's only for one day. USPS will be back to delivering mail tomorrow, Tuesday, February 21.If you're expecting a package through Amazon, {HS}UPS{HE}, or FedEx, on the other hand, they are all {HS}expected to be in service today despite the holiday.{HE}"
+                },
+                {
+                    "title": "Is Mail Delivered on Presidents Day?", 
+                    "text": "Monday marks Presidents Day, and some federal offices and services will close in observance of the holiday.Presidents Day is rooted in honoring former President George Washington's birthday. The first president's birthday has long been a day of celebration in the United States, but in 1968, Congress passed the Uniform Monday Holiday Act, which established the observance of Washington's birthday each year on the third Monday of February.But to this day, Presidents Day isn't a holiday that guarantees everyone will have the day off. Your local post office might be closed, but your workplace isn't. Or you might have the day off from school, but your grocery store remains open for shopping. {HS}Here's what you need to know about what's open and closed on Presidents Day.{HE} The U.S. Postal Service will not deliver mail on Monday, and post offices across the country will be closed on the federal holiday. {HS}UPS will be delivering mail{HE} on Monday , and {HS}UPS store locations will also be open.{HE} FedEx will also deliver mail on Monday , {HS}though some deliveries will have modified service.{HE} Many banks, and the Federal Reserve system, will observe Presidents Day on Monday. But some banks, such as TD Bank, will be open on the holiday.Many ATMs are typically available on Presidents Day, though you can check with locations in your area for more information.New York Stock Exchange markets , Nasdaq and other markets observe Presidents Day as a holiday.Washington's birthday is a holiday for federal government institutions and courts.Many state agencies and courts will also be closed.Contributing: Mike Snider, USA TODAY",
+                    "shorter_text": "Monday marks Presidents Day, and some federal offices and services will close in observance of the holiday.Presidents Day is rooted in honoring former President George Washington's birthday. The first president's birthday has long been a day of celebration in the United States, but in 1968, Congress passed the Uniform Monday Holiday Act, which established the observance of Washington's birthday each year on the third Monday of February.But to this day, Presidents Day isn't a holiday that guarantees everyone will have the day off. Your local post office might be closed, but your workplace isn't. Or you might have the day off from school, but your grocery store remains open for shopping. {HS}Here's what you need to know about what's open and closed on Presidents Day.{HE} The U.S. Postal Service will not deliver mail on Monday, and post offices across the country will be closed on the federal holiday. {HS}UPS will be delivering mail{HE} on Monday , and {HS}UPS store locations will also be open.{HE} FedEx will also deliver mail on Monday , {HS}though some deliveries will have modified service.{HE} Many banks, and the Federal Reserve system, will observe Presidents Day on Monday."
+                }
+            ],
+            "planning": [
+                {
+                    "output": "The USPS does not run on President's Day , and all USPS branches and locations will be closed in observance of the holiday, with only priority packages being potentially delivered.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [1,2],
+                            "relative_highlights": [1,2]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [4,5,6],
+                            "relative_highlights": [1,2,3]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [12,13],
+                            "relative_highlights": [1,2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "USPS not working on President's Day except for the delivery of some priority packages",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What happens to all US Postal Service branches and locations will on President's Day?",
+                            "a": "they are closed"
+                        },
+                        {
+                            "q": "What types of USPS packages might still be delivered on President's Day?",
+                            "a": "priority packages"
+                        }
+                    ]
+                },
+                {
+                    "output": "However, UPS will still be delivering mail on this day, and its stores will be open.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [3],
+                            "relative_highlights": [3]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [7,8,9,10],
+                            "relative_highlights": [4,5,6,7]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [14,15],
+                            "relative_highlights": [3,4]
+                        },
+                        {
+                            "doc": 4,
+                            "highlights": [16,17,18],
+                            "relative_highlights": [1,2,3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "UPS still working on President's Day",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What is the status of UPS stores during President's Day?",
+                            "a": "remain open"
+                        },
+                        {
+                            "q" : "What will UPS maintain on President's Day?",
+                            "a": "its pickup and delivery services"
+                        }
+                    ]
+                },
+                {
+                    "output": "Yet, some delays in UPS services might be expected.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [11],
+                            "relative_highlights": [8]
+                        },
+                        {
+                            "doc": 4,
+                            "highlights": [19],
+                            "relative_highlights": [4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "some delays in UPS services",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How will President's day could affect UPS services?",
+                            "a": "packages sent via UPS SurePost or UPS Mail Innovations will be delayed by one day"
+                        }
+                    ]
+                }                                
+            ]
+        },
+        {
+            "answer": "Research has shown that electric cars are better for the environment. They have lower emissions than petrol or diesel cars, reducing the greenhouse effect and air pollution. This takes into account their production and electricity generation. They can also optimize sustainable transportation, specifically when charged with renewable energy.",
+            "question" : "Are electric cars actually better for the environment?",
+            "docs": [
+                {
+                    "title": "Benefits of Electric Cars on the Environment", 
+                    "text": "{HS}Research has shown that electric cars are better for the environment{HE}. {HS}They emit fewer greenhouse gases and air pollutants than petrol or diesel cars.{HE} And this {HS}takes into account their production and electricity generation{HE} to keep them running.Here we answer some of the most common questions around EVs and their impact on the environment.If you're already set on an electric car, check out our leasing deals - best cars and great prices.The major benefit of electric cars is the contribution that they can make towards improving air quality in towns and cities. With no tailpipe, pure electric cars produce no carbon dioxide emissions when driving. This reduces air pollution considerably.Put simply, electric cars give us cleaner streets making our towns and cities a better place to be for pedestrians and cyclists. In over a year, just one electric car on the roads can save an average 1.5 million grams of CO2 . That's the equivalent of four return flights from London to Barcelona.According to the Mayor of London, road transport accounts for around half of the capital's air pollution .",
+                    "shorter_text": "{HS}Research has shown that electric cars are better for the environment{HE}. {HS}They emit fewer greenhouse gases and air pollutants than petrol or diesel cars.{HE} And this {HS}takes into account their production and electricity generation{HE} to keep them running.Here we answer some of the most common questions around EVs and their impact on the environment."
+                },
+                {
+                    "title": "Electric vs. Gas Cars: Which is Better For The Environment?", 
+                    "text": "The evidence is clear: {HS}electric cars have lower overall emissions{HE} in just about every scenario {HS}than their gas-powered counterparts.{HE} Over their lifetime, {HS}electric cars are better for the environment than gas-powered cars.{HE} {HS}This has been confirmed by wide-ranging studies{HE} across many countries.",
+                    "shorter_text": "The evidence is clear: {HS}electric cars have lower overall emissions{HE} in just about every scenario {HS}than their gas-powered counterparts.{HE} Over their lifetime, {HS}electric cars are better for the environment than gas-powered cars.{HE} {HS}This has been confirmed by wide-ranging studies{HE} across many countries."
+                },
+                {
+                    "title": "The Electric Car Boom", 
+                    "text": "We are reader-supported. When you buy through links on our site, we may earn affiliate commission.The environmental movement is redefining our modern lifestyles. Green technology shrinks our carbon footprint while promoting a sustainable economy. We may view solar-paneled roofs, energy-conserving thermostats and electric cars in the residential sector, promoting ecological conservation.As commercial and residential communities adopt eco-friendly technology, some may question its effects. Before evaluating the environmental impact of electric cars, we must examine their origin.Tesla is a household term, partly because of vehicle automation and also environmental sustainability. Conventional vehicles emit large quantities of air pollution into the atmosphere, negatively affecting the climate. Electric cars provide a sustainable solution to ecologically degrading emissions.The electric car boom altered the motor vehicle market. Most companies released, or are developing, electric versions of their cars. General Motors developed a plan to eliminate gasoline-powered car and light vehicle sales by 2035 , generating solely electric models.Before society blindly accepts the market's transformation, it is essential to identify the environmental impact of the alteration. Various companies exploit eco-conscious consumers through greenwashing. The term signifies a business's use of eco-friendly terms to promote sales, even when their practices are not sustainable.Consumers can protect themselves from greenwashing by researching their products' environmental impacts.Exploring the environmental impact of electric cars is essential before making a purchase. The most significant draw to the product is its reduction of air pollution. The transportation sector currently accounts for 30% of U.S. greenhouse gas emissions, making it the single largest contributor.{HS}When we use electric vehicles instead of gasoline-powered cars, we reduce the enhanced greenhouse effect.{HE} It is a variation of the Earth's natural warming process. When sunlight hits the planet, the atmosphere absorbs radiation, using it to maintain life-sustaining temperatures.Organically, the atmosphere converts some light into heat and sends excess energy to Earth's surface. After warming the surface, it releases additional heat back to the atmosphere. Naturally occurring gases reabsorb the heat and release unnecessary warmth into space.When society emits greenhouse gases into the environment, they alter the natural warming process. Air pollutants convert sunlight to heat at a higher rate than other elements. They also trap heat on Earth rather than releasing it into space. Over time, entrapment and warmth production increase the global temperature.As the planet warms, the global ecosystem degrades, causing fatal issues. {HS}Electric cars reduce the number of greenhouse gases in the atmosphere{HE}, conserving the environment. {HS}They emit zero tailpipe or direct carbon emissions{HE}. {HS}When charged with renewable energy, electric vehicles can optimize sustainable transportation.{HE} Solar or wind-powered cars protect society's health by {HS}reducing air pollution.{HE} Only about half of Americans breathe healthy air, causing various developmental and breathing problems.Cars with zero tailpipe emissions protect the health of future generations. They also protect the ocean from oil runoff and spills. When oil pollutes marine habitats, species suffer reproductive, growth and fatal effects. Fortunately, green technology prevents further aquatic destruction.Electric cars offer solutions to environmental problems. The technology is still new, causing some sustainability challenges. One significant obstacle with electric vehicle development is production sourcing.Renewable energy accounts for nearly 17% of the U.S. electricity source. The rest of our power derives from coal and fossil fuels, which both release carbon emissions. Most motor vehicle production facilities run on these \"dirty\" power sources.",
+                    "shorter_text": "We are reader-supported. When you buy through links on our site, we may earn affiliate commission.The environmental movement is redefining our modern lifestyles. Green technology shrinks our carbon footprint while promoting a sustainable economy. We may view solar-paneled roofs, energy-conserving thermostats and electric cars in the residential sector, promoting ecological conservation.As commercial and residential communities adopt eco-friendly technology, some may question its effects. Before evaluating the environmental impact of electric cars, we must examine their origin.Tesla is a household term, partly because of vehicle automation and also environmental sustainability. Conventional vehicles emit large quantities of air pollution into the atmosphere, negatively affecting the climate. Electric cars provide a sustainable solution to ecologically degrading emissions.The electric car boom altered the motor vehicle market. Most companies released, or are developing, electric versions of their cars. General Motors developed a plan to eliminate gasoline-powered car and light vehicle sales by 2035 , generating solely electric models.Before society blindly accepts the market's transformation, it is essential to identify the environmental impact of the alteration. Various companies exploit eco-conscious consumers through greenwashing. The term signifies a business's use of eco-friendly terms to promote sales, even when their practices are not sustainable.Consumers can protect themselves from greenwashing by researching their products' environmental impacts.Exploring the environmental impact of electric cars is essential before making a purchase. The most significant draw to the product is its reduction of air pollution. The transportation sector currently accounts for 30% of U.S. greenhouse gas emissions, making it the single largest contributor.{HS}When we use electric vehicles instead of gasoline-powered cars, we reduce the enhanced greenhouse effect.{HE} It is a variation of the Earth's natural warming process. When sunlight hits the planet, the atmosphere absorbs radiation, using it to maintain life-sustaining temperatures.Organically, the atmosphere converts some light into heat and sends excess energy to Earth's surface. After warming the surface, it releases additional heat back to the atmosphere. Naturally occurring gases reabsorb the heat and release unnecessary warmth into space.When society emits greenhouse gases into the environment, they alter the natural warming process. Air pollutants convert sunlight to heat at a higher rate than other elements. They also trap heat on Earth rather than releasing it into space. Over time, entrapment and warmth production increase the global temperature.As the planet warms, the global ecosystem degrades, causing fatal issues. {HS}Electric cars reduce the number of greenhouse gases in the atmosphere{HE}, conserving the environment. {HS}They emit zero tailpipe or direct carbon emissions{HE}. {HS}When charged with renewable energy, electric vehicles can optimize sustainable transportation.{HE} Solar or wind-powered cars protect society's health by {HS}reducing air pollution.{HE}"
+                }
+            ],
+            "planning": [
+                {
+                    "output": "Research has shown that electric cars are better for the environment.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [1],
+                            "relative_highlights": [1]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [6,7],
+                            "relative_highlights": [3,4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the fact that research showed that electric cars are better for the environment",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What has research shown?",
+                            "a": "electric cars are better for the environment"
+                        }
+                    ]
+                },
+                {
+                    "output": "They have lower emissions than petrol or diesel cars, reducing the greenhouse effect and air pollution.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [2],
+                            "relative_highlights": [2]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [4,5],
+                            "relative_highlights": [1,2]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [8,9,10,12],
+                            "relative_highlights": [1,2,3,5]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the reduced emission of electric cars and the impact on the greenhouse effect and air pollution",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What do electric cars emit less than petrol or diesel cars?",
+                            "a": "greenhouse gases and air pollutants"
+                        },
+                        {
+                            "q": "What is reduced when we use electric vehicles?",
+                            "a": "the enhanced greenhouse effect"
+                        },
+                        {
+                            "q": "What is reduced when we use electric vehicles?",
+                            "a": "air polution"
+                        }
+                    ]
+                },
+                {
+                    "output": "This takes into account their production and electricity generation.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [3],
+                            "relative_highlights": [3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "what is taken into account when talking about the reduced emission of electric cars",
+                    "blueprint_QAs": [
+                        {
+                            "q" : "When claiming that electric cars emit fewer greenhouse gases and air pollutants, what is taken into account?",
+                            "a" : "their production and electricity generation"
+                        }
+                    ]
+                },
+                {
+                    "output": "They can also optimize sustainable transportation, specifically when charged with renewable energy.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 3,
+                            "highlights": [11],
+                            "relative_highlights": [4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the benefit of electric cars for sustainable transportation",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How can electric cars benefit us when charged with renewable energy?",
+                            "a": "by optimizing sustainable transportation"
+                        }
+                    ]
+                }                                            
+            ]
+        },
+        {
+            "answer": "The Oscars red carpet was changed to a champagne color this year, in order to better transition from daytime arrivals to the evening. This transition was necessary, as the Oscars always began very early in the day, when it was hot, but everybody was dressed for a night event. This specific color was chosen because it evokes the sunset, symbolizing the sunset before the golden hour.",
+            "question" : "What was the color of the carpet at the Oscars this year, and why was it not red?",
+            "docs": [
+                {
+                    "title": "",
+                    "text": "This year marks the first color change of the carpet since 1961.The wait is finally over for one of the biggest nights in Hollywood.The 95th Academy Awards will kick off Sunday, March 12 at 5 p.m. PT / 8 p.m. ET at the Dolby Theatre.Aside from finding out which nominee will take home an Oscar, the star-studded night is expected to have several memorable moments, including the highly anticipated opening monologue by host Jimmy Kimmel and performances by Rihanna, Sofia Carson, Diane Warren and David Byrne.Here's what to know before the main event.Red carpet coverage will begin at 5 p.m. ET on E! and 6:30 p.m. ET on ABC. The E! live red carpet coverage will be hosted by Laverne Cox.Following the red carpet, the Academy Awards will be televised live on ABC, as well as on several associated streaming platforms like ABC.com and the ABC app.For those without cable, the Oscars will also be on Sling TV, YouTube TV, Fubo TV and Hulu + Live TV. Many streaming platforms offer tree trial periods that you can activate on Sunday, if you don't already have an account.This year, the Oscars red carpet isn't going to be red, marking the first color change since 1961. Rather, stars will walk a champagne-colored carpet.Red carpet creative consultants Lisa Love and Raul Avila were tasked to {HS}reimagine the carpet color{HE}, opting to break tradition {HS}so the talent could better transition from daytime arrivals to the evening{HE}, according to the Hollywood Reporter .\"This is about getting ready for the golden hour that follows the show,\" Love explained.Kimmel told the publication that he's particularly excited about the newly-colored carpet, saying it's \"a remnant, we got it for a very good price downtown.\"The Oscar host also joked about how the new carpet would make it difficult for any unscripted drama to occur.\"People have been asking if there's going to be any trouble this year, is there going to be any violence this year? I certainly hope not,\" he said. \"But if there is, I think the decision to go with a champagne carpet rather than a red carpet shows how confident we are that no blood will be shed.\"Hosted by Jimmy Kimmel for the third time , the 2023 Oscars are broadcast live from the Dolby Theatre in Hollywood in Los Angeles at 8 p.m. ET/5 p.m. PT, with the red carpet starting earlier . The 2023 Oscars are available to watch on ABC and various streaming platforms.Leading the list of nominees include \"Everything Everywhere All at Once\" and \"The Banshees of Inisherin.\" The list of performers and presenters includes Rihanna, following her Super Bowl halftime show , and the viral Telegu-language hit \"Naatu Naatu .\"Follow TODAY.com for complete Oscars coverage, including this year's winners and unexpected moments.",
+                    "shorter_text": "This year marks the first color change of the carpet since 1961.The wait is finally over for one of the biggest nights in Hollywood.The 95th Academy Awards will kick off Sunday, March 12 at 5 p.m. PT / 8 p.m. ET at the Dolby Theatre.Aside from finding out which nominee will take home an Oscar, the star-studded night is expected to have several memorable moments, including the highly anticipated opening monologue by host Jimmy Kimmel and performances by Rihanna, Sofia Carson, Diane Warren and David Byrne.Here's what to know before the main event.Red carpet coverage will begin at 5 p.m. ET on E! and 6:30 p.m. ET on ABC. The E! live red carpet coverage will be hosted by Laverne Cox.Following the red carpet, the Academy Awards will be televised live on ABC, as well as on several associated streaming platforms like ABC.com and the ABC app.For those without cable, the Oscars will also be on Sling TV, YouTube TV, Fubo TV and Hulu + Live TV. Many streaming platforms offer tree trial periods that you can activate on Sunday, if you don't already have an account.This year, the Oscars red carpet isn't going to be red, marking the first color change since 1961. Rather, stars will walk a champagne-colored carpet.Red carpet creative consultants Lisa Love and Raul Avila were tasked to {HS}reimagine the carpet color{HE}, opting to break tradition {HS}so the talent could better transition from daytime arrivals to the evening{HE}, according to the Hollywood Reporter ."
+                },
+                {
+                    "title": "",
+                    "text": "HOLLYWOOD, LOS ANGELES -- For the first time in more than six decades, Hollywood's biggest night isn't rolling out the red carpet.{HS}The celebrated carpet at the Oscars{HE} -- the place where stars show off their most elegant and outrageous fashions -- {HS}will be a \"champagne\" color this year.{HE} It will be the first time since 1961 that the carpet at the Oscars isn't red.Academy CEO Bill Kramer said the arrivals line will get a more \"lux\" look with red drapes on all sides in contrast with a {HS}champagne-colored carpet{HE}, according to the Associated Press.The idea came from creative consultants Lisa Love, a longtime Vogue contributor, and Raul vila, the creative director for the glamorous Met Gala in New York.\"{HS}We chose this beautiful sienna, saffron color that evokes the sunset, because this is the sunset before the golden hour{HE},\" Love told the AP.Joe Lewis, a red carpet producer, said that so far, the rollout has gone well.\"With bold new leadership comes bold decisions. We haven't had this significant of a change in over 15, 20 years, and this is a pretty bold one. But I think the world will let us know what they think,\" said Lewis.Host Jimmy Kimmel was present for the unveiling, and, of course, had some funny things to say on the change.\"I think we can go with a champagne carpet instead of a red carpet because of how confident we are that no blood will be shed,\" said Kimmel.Fans of the awards show took notice of the carpet change as well.\"It seems a pity because the red carpet is so famous, isn't it?\" said Ian Logan, a tourist from England. \"Just doesn't seem quite right to change it.\"This year the carpet will also be covered, in part to protect the stars and cameras from the weather, but also to help turn the arrivals into an evening event.\"We turned a day event into night,\" Love told The Associated Press. \"It's evening, even though it's still 3:00.\"The Associated Press contributed to this report.",
+                    "shorter_text": "HOLLYWOOD, LOS ANGELES -- For the first time in more than six decades, Hollywood's biggest night isn't rolling out the red carpet.{HS}The celebrated carpet at the Oscars{HE} -- the place where stars show off their most elegant and outrageous fashions -- {HS}will be a \"champagne\" color this year.{HE} It will be the first time since 1961 that the carpet at the Oscars isn't red.Academy CEO Bill Kramer said the arrivals line will get a more \"lux\" look with red drapes on all sides in contrast with a {HS}champagne-colored carpet{HE}, according to the Associated Press.The idea came from creative consultants Lisa Love, a longtime Vogue contributor, and Raul vila, the creative director for the glamorous Met Gala in New York.\"{HS}We chose this beautiful sienna, saffron color that evokes the sunset, because this is the sunset before the golden hour{HE},\" Love told the AP.Joe Lewis, a red carpet producer, said that so far, the rollout has gone well."
+                },
+                {
+                    "title": "",
+                    "text": "{HS}The Academy unveiled a brand-new champagne-colored carpet{HE} for Sunday's Oscars ceremony Published on March 10, 2023 02:32 PM- Share- Tweet- Pin The red carpet is synonymous with glamorous entertainment industry parties, awards shows and premieres, but the Academy Awards are trying out something different for Sunday's 95th Oscars.On Wednesday, host Jimmy Kimmel — who returns to the awards show this year for his third hosting gig — stood outside Los Angeles' Dolby Theater as {HS}the Academy rolled out its brand-new champagne-colored carpet{HE} , breaking a tradition of red-colored carpets that dates all the way back to the 33rd annual ceremony in 1961, according to the Associated Press .\"People have been asking, 'Is there going to be any trouble this year? Is there going to be any violence this year?' And we certainly hope not,\" Kimmel said in a clip of the carpet's unveiling shared on social media by the AP. \"But if there is, I think the decision to go with a champagne carpet rather than a red carpet shows how confident we are that no blood will be shed.\"\"This is the kind of thing you only see in Hollywood and every model home in America,\" the late-night host joked as the carpet was rolled out. \"I've never really done play-by-play for carpeting before.\"Never miss a story — sign up for PEOPLE's free daily newsletter to stay up-to-date on the best of what PEOPLE has to offer, from juicy celebrity news to compelling human interest stories.Vogue contributor Lisa Love and Met Gala creative director Raul Avila served as creative consultants on the decision to significantly alter the carpet's color for the first time in decades, according to the AP. The Academy also decided to cover the carpet entirely to protect attendees from potentially inclement weather and incorporate an evening feeling to arrivals, which begin mid-afternoon in L.A.\"[Academy CEO Bill Kramer] basically said that {HS}we need to turn this event from a day event into the night{HE},\" Love told The Hollywood Reporter about the change in an interview published Friday.\"{HS}That's always been something that the Oscars has had a problem with ever since it's started because it begins so early in the day with the sunshine and the heat{HE},\" she added. \"{HS}But everybody's dressed up for a night event{HE} and they are there at 4 o'clock.\"RELATED VIDEO: Jamie Lee Curtis Shares the Special Item She Plans to Bring in Her Purse on Oscar NightWhile speaking with the AP, Love said there is no guarantee the carpet will remain champagne-colored for future shows and that it still makes sense to refer to it as the \"red carpet\" by default since the phrase has a close association with award show arrivals.\"Somebody's always got a way to find something wrong with something,\" Love said, when asked whether she and Avila held concerns about potentially upsetting those who prefer the traditional red carpet. \"This is just a lightness and hopefully people like it. It doesn't mean that it's always going to be a champagne-colored carpet.\"The 95th Academy Awards \"red carpet\" opens at 3:30 p.m. EST Sunday, according to the AP. The Oscars ceremony will be televised live on ABC from the Dolby Theatre at 8 p.m. EST.",
+                    "shorter_text": "{HS}The Academy unveiled a brand-new champagne-colored carpet{HE} for Sunday's Oscars ceremony Published on March 10, 2023 02:32 PM- Share- Tweet- Pin The red carpet is synonymous with glamorous entertainment industry parties, awards shows and premieres, but the Academy Awards are trying out something different for Sunday's 95th Oscars.On Wednesday, host Jimmy Kimmel — who returns to the awards show this year for his third hosting gig — stood outside Los Angeles' Dolby Theater as {HS}the Academy rolled out its brand-new champagne-colored carpet{HE} , breaking a tradition of red-colored carpets that dates all the way back to the 33rd annual ceremony in 1961, according to the Associated Press .\"People have been asking, 'Is there going to be any trouble this year? Is there going to be any violence this year?' And we certainly hope not,\" Kimmel said in a clip of the carpet's unveiling shared on social media by the AP. \"But if there is, I think the decision to go with a champagne carpet rather than a red carpet shows how confident we are that no blood will be shed.\"\"This is the kind of thing you only see in Hollywood and every model home in America,\" the late-night host joked as the carpet was rolled out. \"I've never really done play-by-play for carpeting before.\"Never miss a story — sign up for PEOPLE's free daily newsletter to stay up-to-date on the best of what PEOPLE has to offer, from juicy celebrity news to compelling human interest stories.Vogue contributor Lisa Love and Met Gala creative director Raul Avila served as creative consultants on the decision to significantly alter the carpet's color for the first time in decades, according to the AP. The Academy also decided to cover the carpet entirely to protect attendees from potentially inclement weather and incorporate an evening feeling to arrivals, which begin mid-afternoon in L.A.\"[Academy CEO Bill Kramer] basically said that {HS}we need to turn this event from a day event into the night{HE},\" Love told The Hollywood Reporter about the change in an interview published Friday.\"{HS}That's always been something that the Oscars has had a problem with ever since it's started because it begins so early in the day with the sunshine and the heat{HE},\" she added. \"{HS}But everybody's dressed up for a night event{HE} and they are there at 4 o'clock."
+                }
+            ],
+            "planning": [
+                {
+                    "output": "The Oscars red carpet was changed to a champagne color this year, in order to better transition from daytime arrivals to the evening.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [1,2],
+                            "relative_highlights": [1,2]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [3,4,5],
+                            "relative_highlights": [1,2,3]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [7,8,9],
+                            "relative_highlights": [1,2,3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the new color of the Oscar carpet and why it changed",
+                    "blueprint_QAs": [
+                        {
+                            "q": "Why was the Oscar carpet's color changed?",
+                            "a": "so the talent could better transition from daytime arrivals to the evening"
+                        },
+                        {
+                            "q": "What is the Oscar carpet's new color?",
+                            "a": "champagne"
+                        }
+                    ]
+                },
+                {
+                    "output": "This transition was necessary, as the Oscars always began very early in the day, when it was hot, but everybody was dressed for a night event.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 3,
+                            "highlights": [10,11],
+                            "relative_highlights": [4,5]
+                        }
+                    ],
+                    "cluster_CoT_topic": "why there was a need to turn the Oscars into an only-night event",
+                    "blueprint_QAs": [
+                        {
+                            "q": "Since when did the Oscars had this problem?",
+                            "a": "ever since it's started"
+                        },
+                        {
+                            "q": "When does the Oscars begin?",
+                            "a": "early in the day"
+                        },
+                        {
+                            "q": "What happens when the Oscars begin?",
+                            "a": "there is sunshine and heat"
+                        },
+                        {
+                            "q": "What is everybody coming to the Oscar's dressed up for?",
+                            "a": "a night event"
+                        }
+                    ]
+                },
+                {
+                    "output": "This specific color was chosen because it evokes the sunset, symbolizing the sunset before the golden hour.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [6],
+                            "relative_highlights": [4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "why champhagne was the new color chosen for the carpet",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What does the new carpet color evoke?",
+                            "a": "the sunset"
+                        },
+                        {
+                            "q": "Why was this new color chosen for the carpet?",
+                            "a": "because this is the sunset before the golden hour"
+                        }
+                    ]
+                }                                   
+            ]
+        }
+    ]
+}

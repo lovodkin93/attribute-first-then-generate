@@ -1,0 +1,589 @@
+{
+    "instruction-e2e-only-setting": "Write an accurate, engaging, and concise summary for the given passages. IMPORTANT: make sure that the summary consists of approximately 200 words and at least 7 sentences.",
+    "instruction-ALCE": "Instruction: Write an accurate, engaging, and concise summary for the given passages and cite them properly. Use an unbiased and journalistic tone. Always cite for any factual claim. When citing several passages, use [1][2][3]. Cite at least one passage and at most three passages after each sentence. If multiple passages support the sentence, only cite a minimum sufficient subset of the passages. IMPORTANT: make sure that the summary consists of approximately 200 words and at least 7 sentences.",
+    "instruction-FiC": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). Your job is to generate a coherent summary that covers all and only the \"highlighted\" spans. Make sure ALL highlights are included. IMPORTANT: make sure that the summary consists of approximately 200 words and at least 7 sentences.",
+    "instruction-FiC-CoT": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). Your job is to generate a coherent summary that covers all and only the \"highlighted\" spans. Build the summary iteratively, where each time you cluster highlights to build the next sentence. Make sure ALL highlights are included. IMPORTANT: make sure that the final summary consists of approximately 200 words and at least 7 sentences. IMPORTANT: The clustering steps must be of the form: \"Highlights {comma-delimited highlights indices} are combined to form sentence {sentence_id}:{sentence_text}\". Additionally, before generating the final summary, say \"So the final summary is:\".",
+    "instruction-clustering": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). The goal is to fuse all those highlights into a single summary. As an intermediate step, you need to cluster highlights that can be merged into a sentence (namely, each cluster will be later merged into one sentence). Make sure the clusters are in the same order you would then write the corresponding summary sentences. IMORTANT: make sure there are at least 7 clusters, and no more than 5-6 highlights per cluster. IMPORTANT: The output must be of the format [{\"cluster\":[comma-delimited highlights indices]}]",
+    "instruction-content-selection": "In this task, you are presented with several documents, which need to be summarized. As an intermediate step, you need to identify salient content within the documents. For each document, copy verbatim the salient spans, and use <SPAN_DELIM> as a delimiter between each consecutive span. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive salient spans. IMPORTANT: Each salient content must be a single consecutive verbatim span from the corresponding passages. IMPORTANT: make sure the total number of copied words (from all documents) is around 200 words, and not more than 900.",
+    "instruction-next-cluster-fusion": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). You are also presented with a prefix of a paragraph. You job is to generate the next sentence in the paragraph, that covers all and only the \"highlighted\" spans. Make sure it connects well with the prefix, and that it covers all and only the \"highlighted\" spans.",
+    "instruction-iter-QA-blueprint": "In this task, you are presented with several documents and a prefix. The goal is to summarize the given documents. We will be building the output summary sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract a set of up to 5 question-answer pairs from the input documents that best describe the relevant information for the next sentence (acting as a plan), and then generate that sentence based on those question-answer pairs. IMORTANT: avoid redundancy compared to the prefix. IMPORTANT: make sure that the summary consists of approximately 200 words and at least 7 sentences. IMORTANT: the output must be of the form: Plan: A: <ANSWER1> Q: <QUESTION1> ; A: <ANSWER2> Q: <QUESTION2> ; ... So the next sentence is: <NEXT_SENT>. IMPORTANT: if the prefix is already a good summary, reply \"{BLUEPRINT_EOS}\".",
+    "instruction-iter-span-blueprint": "In this task, you are presented with several documents and a prefix. The goal is to summarize the given documents. We will be building the output summary sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract verbatim a set of relevant spans from the input documents that best describe the relevant information for the next sentence (acting as a plan), and use <SPAN_DELIM> as a delimiter between each consecutive span. Then, generate the next sentence based on those spans. IMORTANT: avoid redundancy compared to the prefix. IMPORTANT: make sure that the summary consists of approximately 200 words and at least 7 sentences. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive spans. IMPORTANT: Each such span must be a single consecutive verbatim span from the corresponding passages. IMPORTANT: if the prefix already properly answers the question, reply \"{BLUEPRINT_EOS}\".",
+    "demo_sep": "\n\n\n",
+    "highlight_start_tkn":"<highlight_start>",
+    "highlight_end_tkn":"<highlight_end>",
+    "blueprint_eos": "STOP GENERATION",
+    "demo_prompt": "{INST}\n\n{D}\n{A}",
+    "demo_prompt_next_cluster_fusion": "{INST}\n\n{D}\nPrefix:{PRFX}\n{A}",
+    "demo_prompt_iter_blueprint": "{INST}\n\n{D}\nPrefix:{PRFX}\nAnswer: {A}",
+    "doc_prompt": "Document [{ID}]: {P}\n",
+    "answer_FiC_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nSo the summary is: {CoT_RESP}",
+    "answer_FiC-CoT_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nThe highlighted spans are combined as follows:\n{PLANNING}",
+    "answer_FiC_planning_prompt":"{HFUSE}\n\nSo the final summary is: {SUMM}",
+    "answer_highlights_listing_prompt": "Document [{ID}]:\n{HLIST_DOC}\n",
+    "answer_highlights_fusion_prompt": "Highlights {HFUSE_SENT} are combined to form sentence {SENT_ID}: {SENT}\n",
+    "answer_clustering_prompt": "The highlighted spans are:\n{HLIST}\n\nAnswer: The highlighted spans are clustered as follows:\n{CLUSTERS}",
+    "answer_clustering-CoT_prompt": "The highlighted spans are:\n{HLIST}\n\nAnswer:\n{CoT_CLUSTERING}",
+    "answer_clustering-CoT_prompt_intermediate": "{CHAINS_CLUSTERING}\nSo, the highlighted spans are clustered as follows:\n{CLUSTERS}",
+    "answer_clustering-CoT_format": "Highlights {COT_HCLUSTER} talk about {COT_HCLUSTER_TOPIC}.\n",
+    "answer_clustering_format": "{\"cluster\":[{HCLUSTER}]}",
+    "answer_content_selection_prompt": "Answer:\n{HDOCS}",
+    "answer_content_selection_format": "Document [{ID}]: {CONTENT_LIST}",
+    "answer_next_cluster_fusion_prompt": "The highlighted spans are:\n{HLIST}\n\nAnswer: The next sentence is: {NEXT_SENT}",
+    "answer_e2e_only_setting_prompt": "Answer: {RESP}",
+    "answer_ALCE_prompt": "Answer: {ALCE_RESP}",
+    "answer_ALCE_format": "{ALCE_SENT} {ALCE_CITATIONS}",
+    "answer_iter_QA_blueprint_prompt": "Plan:\n{QA_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
+    "answer_iter_span_blueprint_prompt": "Plan:\n{SPAN_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
+    "answer_iter_QA_blueprint_format": "A: {BLUEPRINT_A} Q: {BLUEPRINT_Q}",
+    "answer_iter_span_blueprint_format": "Document [{ID}]: {CONTENT_LIST}",
+    "demos": [
+        {
+            "answer": "Martha Stewart spent Halloween, Thanksgiving, Christmas and New Year's in prison. Her job there was cleaning. During her stay, she did ceramics, crocheted, taught yoga, became an expert on vending-machine snacks, and foraged the grounds for fresh greens for the prison salads. She was incarcerated after being convicted in March for lying about a stock sale. She was grateful for the support of her friends, family, colleagues, and fans. Stewart became a prison reform advocate through her experience. Her presence in the Prison has brought many reporters and tourists to town of Alderson, helping its economy. She emerged from the Alderson prison on March 6 with head held high, 20 pounds lighter and a lot wealthier, since shares in her company nearly tripled in value. Following her release, Stewart is planned to host a daily live-audience program on NBC beginning this fall. The show is scheduled to begin once Stewart's five months of house arrest end.",
+            "docs": [
+                {
+                    "text": "Martha Stewart, in a Christmas message posted on her personal Web site, {HS}called for sentencing reform{HE} and took a swipe at the \"bad food\" in prison. Stewart, who is roughly halfway through a five-month sentence for lying about a stock sale, urged fans to think about the women she has met in prison who are \"devoid of care, devoid of love, devoid of family.\" {HS}She suggested Americans should push for reforms in federal sentencing{HE} guidelines for nonviolent first-time offenders and particularly for drug offenders, who she said would be better served by rehabilitation than prison. Stewart, who built a billion-dollar empire in homemaking, reported that {HS}her job at the federal prison camp in Alderson{HE}, West Virginia, {HS}has been cleaning{HE}, including sweeping, vacuuming and raking leaves. \"I have had time to think, time to write, time to exercise, time to not eat the bad food, and time to walk and contemplate the future,\" she said. Earlier this month, her company, Martha Stewart Living Omnimedia, announced {HS}Stewart would host a daytime talk show with a live studio audience beginning this fall.{HE} The company has been working with reality TV pioneer Mark Burnett, and shares of the media company have soared since Stewart reported to prison _ although they have fallen back somewhat in recent weeks. Stewart is due to be released in early March from prison, then must spend five months confined to her home in Bedford. {HS}The television show is scheduled to air after the five months of house arrest end{HE}. Stewart and her former stockbroker, Peter Bacanovic, were {HS}convicted in March of lying about why Stewart unloaded shares of ImClone Systems Inc. stock in 2001, just before the price plunged.{HE} Both are appealing. Lawyers for Stewart filed new papers Wednesday with the 2nd U.S. Circuit Court of Appeals, urging it to overturn her conviction. The appeals court is expected to hear the case early in 2005. The new papers, like Stewart's previous arguments, argue that prosecutors improperly implied she was accused of insider trading and that a government expert witness on ink analysis lied on the stand.",
+                    "shorter_text": "Martha Stewart, in a Christmas message posted on her personal Web site, {HS}called for sentencing reform{HE} and took a swipe at the \"bad food\" in prison. Stewart, who is roughly halfway through a five-month sentence for lying about a stock sale, urged fans to think about the women she has met in prison who are \"devoid of care, devoid of love, devoid of family.\" {HS}She suggested Americans should push for reforms in federal sentencing{HE} guidelines for nonviolent first-time offenders and particularly for drug offenders, who she said would be better served by rehabilitation than prison. Stewart, who built a billion-dollar empire in homemaking, reported that {HS}her job at the federal prison camp in Alderson{HE}, West Virginia, {HS}has been cleaning{HE}, including sweeping, vacuuming and raking leaves. \"I have had time to think, time to write, time to exercise, time to not eat the bad food, and time to walk and contemplate the future,\" she said. Earlier this month, her company, Martha Stewart Living Omnimedia, announced {HS}Stewart would host a daytime talk show with a live studio audience beginning this fall.{HE} The company has been working with reality TV pioneer Mark Burnett, and shares of the media company have soared since Stewart reported to prison _ although they have fallen back somewhat in recent weeks. Stewart is due to be released in early March from prison, then must spend five months confined to her home in Bedford. {HS}The television show is scheduled to air after the five months of house arrest end{HE}. Stewart and her former stockbroker, Peter Bacanovic, were {HS}convicted in March of lying about why Stewart unloaded shares of ImClone Systems Inc. stock in 2001, just before the price plunged.{HE}"
+                },
+                {
+                    "text": "There will be no sweet potato spoon bread this year for Martha Stewart. No cornbread sourdough stuffing, no cranberry pear chutney. Not for her the recipes touted on her company's Web site as meals that will \"make you wish your plate were bigger.\" Instead, officials report that {HS}Stewart -- and her 1,050 fellow inmates at West Virginia's Alderson Federal Prison Camp, where she is serving time for lying about a stock sale -- can expect a more traditional Thanksgiving meal{HE}. The turkey, mashed potatoes, gravy, dressing and pumpkin pie will be prepared by inmates in the camp kitchen. Nobody is saying whether the jail birds will be frozen, or fresh, as the nation's homemaker-in-chief might prefer. Prison officials declined even to specify whether the turkeys will come from a local farm, like the 44-pound bird pardoned last week at the White House by President Bush. The turkey was a native of Mathias, W.Va. A prison spokeswoman could promise only that they will be as cheap as possible. \"They utilize the most cost-effective purchase options,\" said spokeswoman Dawn Zobel, who explained that prison officials regularly scan the Internet to find the least expensive foodstuffs. Privacy rules prohibit Zobel from disclosing whether Stewart, 63, will be helping to prepare the feast, and her spokespeople aren't talking. Thanksgiving Day comes on Day 48 of Stewart's five-month stay at the sprawling minimum-security campus on the Greenbrier River. She chose to begin serving her time even as her appeal wends its way through the legal system. {HS}The holiday is one of a sequence she will miss while on the inside, including Halloween, Christmas and New Year's.{HE} In a Thanksgiving message posted yesterday on www.marthatalks.com -- not marthastewart.com, official Web site of Martha Stewart Living Omnimedia Inc. -- she told fans that she is \"safe, fit and healthy,\" though she acknowledged that \"the loss of freedom and the lack of privacy are extremely difficult.\" Stewart said her \"daily interactions with the staff and fellow inmates here at Alderson are marked by fair treatment and mutual respect.\" {HS}She added that she is \"very grateful\" this Thanksgiving for the support of her friends, family and colleagues, as well has that of her fans{HE} who, she wrote, have sent more than 15,000 e-mails. Stewart has always said she loves the holidays, which helped create her media empire as millions of women tried out her seasonal recipes and decorating tips in hopes of capturing the country elegance of a Martha celebration. Stewart stepped down as company chairman and chief executive after her indictment last year. When she announced in September that she would enter prison soon, Stewart noted specifically how \"very sad\" she would be to miss the holidays this year. \"They are always an opportunity to celebrate family, friends and religious traditions that mean so much to many of us,\" she said then. In an interview last month with CNN's Larry King, her daughter, Alexis Stewart, acknowledged that her mother loves the holidays and that spending them in prison would be very hard. But she said a \"whole bunch of her family\" would travel to Alderson to celebrate Thanksgiving. Although the prison generally allows only weekend visits, Stewart's family can take advantage of special hours Thursday, from 8 a.m. to 3:30 p.m. Inmates, who all are required to hold a prison job, get the day off, with the exception of those who work in the powerhouse and, of course, the kitchen. The domestic diva's family shouldn't count on eating with Stewart, however. In years past, Thanksgiving was the one day of the year when inmates' families were allowed past visiting rooms and into the heart of the camp where, for $1.75, they could share in the feast. Not this year. Zobel said the decision to limit the meal to inmates was a \"procedural change\" announced in August by the camp's new warden and was driven partly by budgetary concerns. (Optional Add End) Instead, Stewart's relatives could attend some of the seasonal events that kick off this week in Alderson, a town of 1,100 that has been home to the nation's oldest federal prison for women since it opened in 1927. This weekend, several galleries and stores on Railroad Avenue will host their annual open houses. Patti Grafton at the Wolf Creek Gallery will serve mulled cider. In December, the town will host its annual Christmas celebration, throwing open the doors to decorated old mansions for tours. The Singing Angels, a gospel choir made up of Alderson inmates, will perform at the Presbyterian church. Among the things the town is thankful for this year is Stewart, whom they have adopted since she slipped through the gates of the prison down the road before dawn Oct.8. Though the prison has hosted famous inmates before, none seem to have elicited quite as much interest as {HS}Stewart, who has brought with her a seemingly endless stream of reporters and tourists to shop in the stores and eat in the town's two restaurants.{HE} Betty Alderson, who is married to a descendant of the town's founder and owns the 117-year-old Alderson Store, just keeps selling her Martha-themed T-shirts. The orders come in practically every day, from across the country -- more than 800 so far. The sales, she said, will make this a nice Thanksgiving indeed for her family. \"We're in rural West Virginia. We don't have a lot going on, and things are mighty slow,\" she said. \"We have a lot of bills to pay. It's been good to have to that extra padding there to help us out.\"",
+                    "shorter_text": "There will be no sweet potato spoon bread this year for Martha Stewart. No cornbread sourdough stuffing, no cranberry pear chutney. Not for her the recipes touted on her company's Web site as meals that will \"make you wish your plate were bigger.\" Instead, officials report that {HS}Stewart -- and her 1,050 fellow inmates at West Virginia's Alderson Federal Prison Camp, where she is serving time for lying about a stock sale -- can expect a more traditional Thanksgiving meal{HE}. The turkey, mashed potatoes, gravy, dressing and pumpkin pie will be prepared by inmates in the camp kitchen. Nobody is saying whether the jail birds will be frozen, or fresh, as the nation's homemaker-in-chief might prefer. Prison officials declined even to specify whether the turkeys will come from a local farm, like the 44-pound bird pardoned last week at the White House by President Bush. The turkey was a native of Mathias, W.Va. A prison spokeswoman could promise only that they will be as cheap as possible. \"They utilize the most cost-effective purchase options,\" said spokeswoman Dawn Zobel, who explained that prison officials regularly scan the Internet to find the least expensive foodstuffs. Privacy rules prohibit Zobel from disclosing whether Stewart, 63, will be helping to prepare the feast, and her spokespeople aren't talking. Thanksgiving Day comes on Day 48 of Stewart's five-month stay at the sprawling minimum-security campus on the Greenbrier River. She chose to begin serving her time even as her appeal wends its way through the legal system. {HS}The holiday is one of a sequence she will miss while on the inside, including Halloween, Christmas and New Year's.{HE} In a Thanksgiving message posted yesterday on www.marthatalks.com -- not marthastewart.com, official Web site of Martha Stewart Living Omnimedia Inc. -- she told fans that she is \"safe, fit and healthy,\" though she acknowledged that \"the loss of freedom and the lack of privacy are extremely difficult.\" Stewart said her \"daily interactions with the staff and fellow inmates here at Alderson are marked by fair treatment and mutual respect.\" {HS}She added that she is \"very grateful\" this Thanksgiving for the support of her friends, family and colleagues, as well has that of her fans{HE} who, she wrote, have sent more than 15,000 e-mails. Stewart has always said she loves the holidays, which helped create her media empire as millions of women tried out her seasonal recipes and decorating tips in hopes of capturing the country elegance of a Martha celebration. Stewart stepped down as company chairman and chief executive after her indictment last year. When she announced in September that she would enter prison soon, Stewart noted specifically how \"very sad\" she would be to miss the holidays this year. \"They are always an opportunity to celebrate family, friends and religious traditions that mean so much to many of us,\" she said then. In an interview last month with CNN's Larry King, her daughter, Alexis Stewart, acknowledged that her mother loves the holidays and that spending them in prison would be very hard. But she said a \"whole bunch of her family\" would travel to Alderson to celebrate Thanksgiving. Although the prison generally allows only weekend visits, Stewart's family can take advantage of special hours Thursday, from 8 a.m. to 3:30 p.m. Inmates, who all are required to hold a prison job, get the day off, with the exception of those who work in the powerhouse and, of course, the kitchen. The domestic diva's family shouldn't count on eating with Stewart, however. In years past, Thanksgiving was the one day of the year when inmates' families were allowed past visiting rooms and into the heart of the camp where, for $1.75, they could share in the feast. Not this year. Zobel said the decision to limit the meal to inmates was a \"procedural change\" announced in August by the camp's new warden and was driven partly by budgetary concerns. (Optional Add End) Instead, Stewart's relatives could attend some of the seasonal events that kick off this week in Alderson, a town of 1,100 that has been home to the nation's oldest federal prison for women since it opened in 1927. This weekend, several galleries and stores on Railroad Avenue will host their annual open houses. Patti Grafton at the Wolf Creek Gallery will serve mulled cider. In December, the town will host its annual Christmas celebration, throwing open the doors to decorated old mansions for tours. The Singing Angels, a gospel choir made up of Alderson inmates, will perform at the Presbyterian church. Among the things the town is thankful for this year is Stewart, whom they have adopted since she slipped through the gates of the prison down the road before dawn Oct.8. Though the prison has hosted famous inmates before, none seem to have elicited quite as much interest as {HS}Stewart, who has brought with her a seemingly endless stream of reporters and tourists to shop in the stores and eat in the town's two restaurants.{HE}"
+                },
+                {
+                    "text": "{HS}Since entering federal prison in October, Martha Stewart has tried her hand at ceramics, learned to crochet and become an expert on vending-machine snacks.{HE} {HS}She has also gotten a lot wealthier.{HE} And when Stewart completes her sentence six weeks from now, colleagues at her company, Martha Stewart Living Omnimedia, anticipate an even bigger payoff. When Stewart was convicted last March of lying to investigators, the future looked grim for the lifestyle company she created. The company's shares hit a low of $10.86 that day, slipping even further the following week. Her flagship television show, Martha Stewart Living, was placed on hiatus after losing many of its CBS viewers. Scores of employees were laid off, and merchandise sales, mainly through Kmart, declined. Revenue plunged to $127.2 million through last September compared with $175 million a year earlier, and the company is expected to post a loss for 2004. What a difference a few months in prison can make. {HS}Since Stewart's conviction, her company's share price has nearly tripled{HE}, increasing her personal stake to an estimated $827 million from $318 million. {HS}Her March 6 release{HE} also creates a one-of-a-kind marketing opportunity for her company, one that is not lost on Mark Burnett, the \"Survivor\" producer who is {HS}planning a daily live-audience program featuring Stewart for NBC this fall{HE}. \"This country is all about second chances,\" Burnett said. \"That's what makes it the greatest country in the world.\" While they would not disclose specific figures, executives at Martha Stewart Living Omnimedia say licensing fees for the daytime show \"are trending significantly higher\" than those for Stewart's original show, even at its peak. Doing time -- or what her friends call \"the intermission\" -- has breathed new life into the company's shares. Some investors and analysts believe the shares are now over-priced and could fall back to earth soon after the interest in Stewart's post-prison status fades. The stock closed Wednesday at $28.31, down 2.1 percent from the previous day, after the company announced plans to shutter its catalog and online divisions in February. Still, the shares are way up from their lows of about $8.50 just before her sentencing last July. Whether American consumers view her as a more sympathetic person, or are just curious what she'll be like after prison, doesn't seem to matter to marketing experts, some of whom think she will be able to take advantage of the renewed interest either way. Her life inside the prison -- with its predawn wakeup calls, unappealing food and suffering fellow inmates -- has been sufficiently chronicled so that the 63-year-old Stewart seems more a sympathetic character than a frosty prima donna concerned only about her own agenda. \"If she gets behind prison reform, then she becomes Saint Martha,\" said Hayes Roth, a brand consultant with Landor Associates in New York. \"It would be great for the brand and great for Martha. If she gets back to running the basics of the business and has this added patina, if you will, of having suffered and moved ahead in her life -- well, Americans love that.\"",
+                    "shorter_text": "{HS}Since entering federal prison in October, Martha Stewart has tried her hand at ceramics, learned to crochet and become an expert on vending-machine snacks.{HE} {HS}She has also gotten a lot wealthier.{HE} And when Stewart completes her sentence six weeks from now, colleagues at her company, Martha Stewart Living Omnimedia, anticipate an even bigger payoff. When Stewart was convicted last March of lying to investigators, the future looked grim for the lifestyle company she created. The company's shares hit a low of $10.86 that day, slipping even further the following week. Her flagship television show, Martha Stewart Living, was placed on hiatus after losing many of its CBS viewers. Scores of employees were laid off, and merchandise sales, mainly through Kmart, declined. Revenue plunged to $127.2 million through last September compared with $175 million a year earlier, and the company is expected to post a loss for 2004. What a difference a few months in prison can make. {HS}Since Stewart's conviction, her company's share price has nearly tripled{HE}, increasing her personal stake to an estimated $827 million from $318 million. {HS}Her March 6 release{HE} also creates a one-of-a-kind marketing opportunity for her company, one that is not lost on Mark Burnett, the \"Survivor\" producer who is {HS}planning a daily live-audience program featuring Stewart for NBC this fall{HE}."
+                },
+                {
+                    "text": "For Martha Stewart, a felony conviction is not such a good thing. It's a great thing. This weekend marks the end of Stewart's five-month prison sentence, a term she chose to get over with by eschewing the option of milking the appeals process. Stewart went to jail with her head held high even as friends, advertisers and investors deserted her seemingly sinking name-brand ship: {HS}She returns to the outside world neither bowed nor broken{HE}, but ready to reclaim her spot at the top of, well, almost everything. In April's issue of Martha Stewart Living, Stewart's column will resume; magazine readers were prepped for the return by editor Margaret Roach, who wrote in March about Martha's indomitable spirit during her incarceration. Mark Burnett, impressed by Stewart's moxy, pitched two television shows: One is an \"Apprentice\" spinoff; the other, a resumption and update of her former daytime how-to program, \"Martha Stewart Living Television.\" Shares in Stewart's company, Martha Stewart Living Omnimedia Inc. hit a 52-week high last week, though the company announced a record loss of $60 million in 2004, nearly 10 times the loss it suffered in 2003. Stewart is reportedly in fighting shape, {HS}having lost 20 pounds in prison{HE} while impressing the locals with her down-to-earth attitude. Fellow inmates at \"Camp Cupcake\" (West Virginia's Alderson Federal Prison Camp), have rallied to her side, shielding her from paparazzi while {HS}she's scoured the grounds for fresh salad greens and taught yoga.{HE} There are still some challenges, of course, the largest of which is five more months of incarceration, albeit at her 153-acre estate in Bedford, N.Y. Stewart's movements will be monitored by an ankle bracelet, she'll have regular appointments with a court officer, and while she's allowed 48 hours of work time each week outside the house, her movements must be accounted for. The specter of a civil suit (separate and different from the criminal for which she went to prison) filed by the SEC hovers, though it's been reported that negotiations are under way for a settlement that would allow Stewart to reclaim her CEO status in five years. (Stewart relinquished the title amid the controversy, and law prohibits her from regaining control of the company.) She has a new boss in CEO Susan Lyne, who's used to working for high-profile personalities (Rupert Murdoch, Michael Eisner) and has been a calm voice of reasoned support during the hoopla. After her house-arrest term expires, Stewart will be on probation for two more years. Stewart won't be allowed to fraternize with other felons, meaning the friends she made in prison are off limits. Nonetheless, Stewart is nothing if not resilient.",
+                    "shorter_text": "For Martha Stewart, a felony conviction is not such a good thing. It's a great thing. This weekend marks the end of Stewart's five-month prison sentence, a term she chose to get over with by eschewing the option of milking the appeals process. Stewart went to jail with her head held high even as friends, advertisers and investors deserted her seemingly sinking name-brand ship: {HS}She returns to the outside world neither bowed nor broken{HE}, but ready to reclaim her spot at the top of, well, almost everything. In April's issue of Martha Stewart Living, Stewart's column will resume; magazine readers were prepped for the return by editor Margaret Roach, who wrote in March about Martha's indomitable spirit during her incarceration. Mark Burnett, impressed by Stewart's moxy, pitched two television shows: One is an \"Apprentice\" spinoff; the other, a resumption and update of her former daytime how-to program, \"Martha Stewart Living Television.\" Shares in Stewart's company, Martha Stewart Living Omnimedia Inc. hit a 52-week high last week, though the company announced a record loss of $60 million in 2004, nearly 10 times the loss it suffered in 2003. Stewart is reportedly in fighting shape, {HS}having lost 20 pounds in prison{HE} while impressing the locals with her down-to-earth attitude. Fellow inmates at \"Camp Cupcake\" (West Virginia's Alderson Federal Prison Camp), have rallied to her side, shielding her from paparazzi while {HS}she's scoured the grounds for fresh salad greens and taught yoga.{HE}"
+                }
+            ],
+            "planning": [
+                {
+                    "output": "Martha Stewart spent Halloween, Thanksgiving, Christmas and New Year's in prison.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [8,9],
+                            "relative_highlights": [1,2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Martha Stewart's spending of the holidays in prison",
+                    "blueprint_QAs": []
+                },  
+                {
+                    "output": "Her job there was cleaning.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [3,4],
+                            "relative_highlights": [3,4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Stewart's job in prison",
+                    "blueprint_QAs": []
+                },  
+                {
+                    "output": "During her stay, she did ceramics, crocheted, taught yoga, became an expert on vending-machine snacks, and foraged the grounds for fresh greens for the prison salads.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 3,
+                            "highlights": [12],
+                            "relative_highlights": [1]
+                        },
+                        {
+                            "doc": 4,
+                            "highlights": [19],
+                            "relative_highlights": [3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "what Stewart did in prison",
+                    "blueprint_QAs": []
+                },  
+                {
+                    "output": "She was incarcerated after being convicted in March for lying about a stock sale.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [7],
+                            "relative_highlights": [7]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [8],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "why Stewart was incarcerated",
+                    "blueprint_QAs": []
+                }, 
+                {
+                    "output": "She was grateful for the support of her friends, family, colleagues, and fans.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [10],
+                            "relative_highlights": [3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Stewart's graditute",
+                    "blueprint_QAs": []
+                }, 
+                {
+                    "output": "Stewart became a prison reform advocate through her experience.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [1,2],
+                            "relative_highlights": [1,2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Stewart's prison reform advocacy",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "Her presence in the Prison has brought many reporters and tourists to town of Alderson, helping its economy.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [11],
+                            "relative_highlights": [4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the fact that Stewart's presence brought many reporters and tourists to Alderson",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "She emerged from the Alderson prison on March 6 with head held high, 20 pounds lighter and a lot wealthier, since shares in her company nearly tripled in value.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 3,
+                            "highlights": [13,14,15],
+                            "relative_highlights": [2,3,4]
+                        },
+                        {
+                            "doc": 4,
+                            "highlights": [17,18],
+                            "relative_highlights": [1,2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Stewart's release from prison and what happened to her afterwards",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "Following her release, Stewart is planned to host a daily live-audience program on NBC beginning this fall.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [5],
+                            "relative_highlights": [5]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [16],
+                            "relative_highlights": [5]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Stewart hosting a daily live-audience program",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "The show is scheduled to begin once Stewart's five months of house arrest end.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [6],
+                            "relative_highlights": [6]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the show beginning after Stewart's five months of house arrest end",
+                    "blueprint_QAs": []
+                }                                              
+            ]
+        },
+        {
+            "answer": "Dr. George Bray, founding president of the North American Association for the Study of Obesity, warns that high-fructose corn syrup is a strong culprit behind childhood obesity. Obesity among children has tripled itself in the last 30-40 years. Obesity increases the risk for type 2 diabetes. Bray believes that environmental factors have more to do with obesity than genetics. He suggests that childhood obesity can be prevented by getting more sleep, decreasing sedentary activities, drinking more milk (calcium controls weight), thinking portion control and eating breakfast. An Institute of Medicine report found compelling evidence encouraging the food industry to change the nature of foods being marketed to children. Former US president Bill Clinton announced a 10-year initiative to combat childhood obesity, and also participated in an obesity-battling campaign invloving several cartoon characters. Clinton's involvement comes from his own health-related experience.",
+            "docs": [
+                {
+                    "text": "{HS}High-fructose corn syrup{HE} isn't completely responsible for the nation's six million {HS}overweight children{HE} -- but {HS}Dr. George Bray says it's a big part of the problem.{HE} Nurture trumps nature in the current childhood-obesity epidemic, says Bray. {HS}It's the environment we're creating for our kids that's the problem, and that environment includes increasing numbers of products high in high-fructose corn syrup{HE}, or HFCS. {HS}Bray, who served as founding president of the North American Association for the Study of Obesity{HE} and organized the first international congress on obesity in 1973, points out that between 1970 (when HFCS was introduced) and 2000 (when average yearly consumption of the ultra-sweet liquid sugar hit 73.5 pounds per person in this country), the prevalence of obesity more than doubled, from 15 percent to almost one-third of the adult population. And worse, much worse, {HS}obesity among children 12 to 19{HE} -- who consume a disproportionate amount of the soft drinks, fruit juice, sports drinks and packaged cookies and other baked goods that are sweetened with HFCS -- {HS}increased from 4.2 percent in 1970 to 15.3 percent in 2000.{HE} The implications for our children's future are clear: \"We know that if it's not caught early, one in three of these overweight children will grow into overweight adults at {HS}increased risk for type 2 diabetes{HE}, coronary heart disease, stroke and early death,\" Bray said at a SS presentation for doctors and nurses at Cook Children's Medical Center in Fort Worth last month. But there is hope. {HS}Obesity is largely preventable{HE} through changes in lifestyle, especially diet, {HS}says Bray, who called for{HE} removing soda machines from schools and {HS}reducing portion sizes{HE} of commercially available sodas in his now-famous commentary in \"T\"\"he American Journal of Clinical Nutrition\" in April, 2004. Larger portions, more high-fat fast foods, less exercise of any kind, irregular sleep patterns, lower consumption of milk and other high-calcium foods}, and increased consumption of HFCS in beverages go a long way toward explaining the obesity epidemic, Bray says. {HS}\"Genetic factors play an important role in the development of obesity{HE}, but given the rapidity with which the current epidemic of obesity has descended on the U.S. and many other countries, {HS}environmental factors are a more likely explanation,\" he says.{HE} \"Whatever its genetic and biochemical determinants, obesity in man is susceptible to an extraordinary degree of control of social factors. Environment is very important.\" Bray says the problem with HFCS is not only that it is sweeter than other forms of sugar, but also that it does not affect appetite. Fructose adds to overeating because it does not trigger chemical messengers that tell the brain the stomach is full and no longer hungry, like food and drinks that contain regular refined sugar do. An internist whose pioneering research helped establish the connections between weight gain and the development of type 2 diabetes, Bray is a research professor and former director of the Pennington Center at Louisiana State University, the largest nutritional research center in the world. He says consumers would be a lot better off without added sugar in any form, but that artificial sweeteners are much preferred over calorically sweetened drinks, even for children. \"Children less than 5 probably shouldn't have any sweetened drinks, and for older children, diet drinks are better than regular soft drinks and fruit drinks,\" Bray said. \"A lot of parents are concerned about the 'chemicals' added to sweeten diet soft drinks, but all forms of extra added sugar and artificial sweeteners are bad. We don't need added sugar in our diet.\" Bray says parents should be in charge of diets, children should be in charge of their own exercise activities, and perhaps government should regulate portion sizes. Kids should be required to be active a certain amount of time each day, but after you tell them to turn off the TV and get moving, you should let them decide if they want to go outside and play with friends, ride bikes, swim, play ball, skate, play tennis, go shopping or whatever, as long as they are moving. When parents require children to \"work out\" or \"exercise,\" the children are more likely to stop moving altogether as soon as they get away from home, Bray says. He is calling for improved packaging and labeling for food meant to be consumed as a single serving. Too many ready-to-eat foods and drinks are labeled as single servings but packaged as two or even three servings. \"It's hard to find a single-serving soft drink,\" he said. \"Portion size is something government (BEGIN BRACKET)the Food and Drug Administration(END BRACKET) can and should do something about.\" (Carolyn Poirot, cpoirotstar-telegram.com. Visit the Star-Telegram's online service at www.star-telegram.com.) WITH BC-HEALTH-CHILD OBESITY-TEX Fitness facts On {HS}Bray's list of the things people can do to prevent childhood (and adult) obesity{HE}: -- {HS}Get more sleep.{HE} (Lack of sleep has a bad effect on leptin, a hormone responsible for appetite control. Major new studies in Japan and Germany show that the fewer hours a child sleeps, the greater the prevalence of obesity.) -- {HS}Decrease sedentary activities.{HE} (Limit TV and computer time, and replace at least one hour of inactivity with any combination of favorite activities, every day.) -- {HS}Drink more milk. (Calcium is clearly important to weight control.){HE} -- Drink fewer sweetened beverages. (Even fruit drinks and diet soft drinks should be limited, but especially cut down on regular carbonated soft drinks.) -- Get as much of your sugar as possible from whole fruits. (Think blueberries, strawberries and bananas to sweeten breakfast cereals; apples and oranges for dessert.) -- {HS}Think portion control{HE}, even with healthy foods. (Serve less on the plates, and allow for seconds.) -- Get everyone in the family to {HS}eat breakfast.{HE} (Have hot or cold cereal most days. Bray eats a lot of oatmeal.) -- Don't smoke, especially if you're pregnant. (Recent studies show that intrauterine exposure to inhaled smoke produces a dose-dependent increase in the weight of children, beginning at adolescence.)",
+                    "shorter_text": "{HS}High-fructose corn syrup{HE} isn't completely responsible for the nation's six million {HS}overweight children{HE} -- but {HS}Dr. George Bray says it's a big part of the problem.{HE} Nurture trumps nature in the current childhood-obesity epidemic, says Bray. {HS}It's the environment we're creating for our kids that's the problem, and that environment includes increasing numbers of products high in high-fructose corn syrup{HE}, or HFCS. {HS}Bray, who served as founding president of the North American Association for the Study of Obesity{HE} and organized the first international congress on obesity in 1973, points out that between 1970 (when HFCS was introduced) and 2000 (when average yearly consumption of the ultra-sweet liquid sugar hit 73.5 pounds per person in this country), the prevalence of obesity more than doubled, from 15 percent to almost one-third of the adult population. And worse, much worse, {HS}obesity among children 12 to 19{HE} -- who consume a disproportionate amount of the soft drinks, fruit juice, sports drinks and packaged cookies and other baked goods that are sweetened with HFCS -- {HS}increased from 4.2 percent in 1970 to 15.3 percent in 2000.{HE} The implications for our children's future are clear: \"We know that if it's not caught early, one in three of these overweight children will grow into overweight adults at {HS}increased risk for type 2 diabetes{HE}, coronary heart disease, stroke and early death,\" Bray said at a SS presentation for doctors and nurses at Cook Children's Medical Center in Fort Worth last month. But there is hope. {HS}Obesity is largely preventable{HE} through changes in lifestyle, especially diet, {HS}says Bray, who called for{HE} removing soda machines from schools and {HS}reducing portion sizes{HE} of commercially available sodas in his now-famous commentary in \"T\"\"he American Journal of Clinical Nutrition\" in April, 2004. Larger portions, more high-fat fast foods, less exercise of any kind, irregular sleep patterns, lower consumption of milk and other high-calcium foods}, and increased consumption of HFCS in beverages go a long way toward explaining the obesity epidemic, Bray says. {HS}\"Genetic factors play an important role in the development of obesity{HE}, but given the rapidity with which the current epidemic of obesity has descended on the U.S. and many other countries, {HS}environmental factors are a more likely explanation,\" he says.{HE} \"Whatever its genetic and biochemical determinants, obesity in man is susceptible to an extraordinary degree of control of social factors. Environment is very important.\" Bray says the problem with HFCS is not only that it is sweeter than other forms of sugar, but also that it does not affect appetite. Fructose adds to overeating because it does not trigger chemical messengers that tell the brain the stomach is full and no longer hungry, like food and drinks that contain regular refined sugar do. An internist whose pioneering research helped establish the connections between weight gain and the development of type 2 diabetes, Bray is a research professor and former director of the Pennington Center at Louisiana State University, the largest nutritional research center in the world. He says consumers would be a lot better off without added sugar in any form, but that artificial sweeteners are much preferred over calorically sweetened drinks, even for children. \"Children less than 5 probably shouldn't have any sweetened drinks, and for older children, diet drinks are better than regular soft drinks and fruit drinks,\" Bray said. \"A lot of parents are concerned about the 'chemicals' added to sweeten diet soft drinks, but all forms of extra added sugar and artificial sweeteners are bad. We don't need added sugar in our diet.\" Bray says parents should be in charge of diets, children should be in charge of their own exercise activities, and perhaps government should regulate portion sizes. Kids should be required to be active a certain amount of time each day, but after you tell them to turn off the TV and get moving, you should let them decide if they want to go outside and play with friends, ride bikes, swim, play ball, skate, play tennis, go shopping or whatever, as long as they are moving. When parents require children to \"work out\" or \"exercise,\" the children are more likely to stop moving altogether as soon as they get away from home, Bray says. He is calling for improved packaging and labeling for food meant to be consumed as a single serving. Too many ready-to-eat foods and drinks are labeled as single servings but packaged as two or even three servings. \"It's hard to find a single-serving soft drink,\" he said. \"Portion size is something government (BEGIN BRACKET)the Food and Drug Administration(END BRACKET) can and should do something about.\" (Carolyn Poirot, cpoirotstar-telegram.com. Visit the Star-Telegram's online service at www.star-telegram.com.) WITH BC-HEALTH-CHILD OBESITY-TEX Fitness facts On {HS}Bray's list of the things people can do to prevent childhood (and adult) obesity{HE}: -- {HS}Get more sleep.{HE} (Lack of sleep has a bad effect on leptin, a hormone responsible for appetite control. Major new studies in Japan and Germany show that the fewer hours a child sleeps, the greater the prevalence of obesity.) -- {HS}Decrease sedentary activities.{HE} (Limit TV and computer time, and replace at least one hour of inactivity with any combination of favorite activities, every day.) -- {HS}Drink more milk. (Calcium is clearly important to weight control.){HE} -- Drink fewer sweetened beverages. (Even fruit drinks and diet soft drinks should be limited, but especially cut down on regular carbonated soft drinks.) -- Get as much of your sugar as possible from whole fruits. (Think blueberries, strawberries and bananas to sweeten breakfast cereals; apples and oranges for dessert.) -- {HS}Think portion control{HE}, even with healthy foods. (Serve less on the plates, and allow for seconds.) -- Get everyone in the family to {HS}eat breakfast.{HE}"
+                },
+                {
+                    "text": "{HS}Former US president Bill Clinton{HE} went to a Manhattan school Tuesday {HS}to announce a 10-year initiative to combat childhood obesity.{HE} Clinton, who is recovering from quadruple bypass surgery and had to overcome his affinity for junk food, described the weight problem as a national epidemic and stressed that something had to be done to change the eating habits of America's young people. The initiative, a partnership with the American Heart Association, will include working with the food and restaurant industry to promote change, increasing physical activity and nutrition at schools nationwide, said the former president. The initiative also aims at creating a campaign to engage kids in making better choices and providing their parents with information on how to incorporate heart healthy activities and diets into their family routines. \"I feel so strongly about this,\" said {HS}Clinton, whose interest in the subject stems from his recent heart surgery.{HE} He said he was alerted by the substantial numbers of children with so-called adult onset diabetes, simply due to their eating and exercise habits. Recent reports indicate that nearly half of the city's elementary students are overweight. More than twice as many kids are overweight as in 1980, and overweight children and teens have a 70 percent chance of becoming overweight adults.",
+                    "shorter_text": "{HS}Former US president Bill Clinton{HE} went to a Manhattan school Tuesday {HS}to announce a 10-year initiative to combat childhood obesity.{HE} Clinton, who is recovering from quadruple bypass surgery and had to overcome his affinity for junk food, described the weight problem as a national epidemic and stressed that something had to be done to change the eating habits of America's young people. The initiative, a partnership with the American Heart Association, will include working with the food and restaurant industry to promote change, increasing physical activity and nutrition at schools nationwide, said the former president. The initiative also aims at creating a campaign to engage kids in making better choices and providing their parents with information on how to incorporate heart healthy activities and diets into their family routines. \"I feel so strongly about this,\" said {HS}Clinton, whose interest in the subject stems from his recent heart surgery.{HE}"
+                },
+                {
+                    "text": "{HS}Television advertising strongly influences what children under 12 eat{HE}, and popular cartoon characters {HS}should be used to promote only healthy foods, a panel of scientists said in a report{HE} released Tuesday. {HS}The report by the Institute of Medicine said the food industry should spend its marketing dollars on nutritious food and drinks.{HE} \"The foods advertised are predominantly high in calories and low in nutrition _ the sort of diet that puts children's long-term health at risk,\" said J. Michael McGinnis, a senior scholar at the institute and chairman of the report committee. The report said evidence is limited on whether TV advertising leads to obesity in children. A study hasn't been done that would demonstrate a direct cause and effect. Still, {HS}the panel found the evidence compelling enough to call for a concerted effort to change the nature of foods being marketed to children{HE}, said panel member Ellen A. Wartella, psychology professor at the University of California, Riverside. The growth in new food products targeted to kids has been huge, from 52 introduced in 1994 to nearly 500 introduced last year, the report said. \"Overwhelmingly, those foods are high-calorie, low-nutrient foods, not the kind of foods that are recommended for children to eat,\" Wartella said. The findings were no surprise to Iowa Sen. Tom Harkin, who requested the report. \"We like to think that SpongeBob SquarePants and Shrek and the pretty little princesses are likable, kid-friendly characters, but they're being used to manipulate vulnerable children to make unhealthy choices,\" said Harkin, the senior Democrat on the Senate Agriculture, Nutrition and Forestry Committee. \"The industry must stop pushing junk food on our kids,\" Harkin said. Nickelodeon in October announced a campaign aimed at persuading kids to eat healthy foods and to get up off the couch and move. {HS}The campaign features former President Bill Clinton and the cartoon characters{HE} SpongeBob SquarePants and Dora the Explorer. {HS}Among children and adolescents from ages 6 through 19, obesity rates have tripled over the past 40 years.{HE} {HS}Obesity increases the risks of type 2 diabetes{HE} and many other diseases and health conditions. The food and beverage industries argue that they already are taking steps recommended in the report, making products healthier, shrinking package sizes and touting healthy lifestyles. \"The growth in the food and beverage industry is in healthier foods,\" said Richard Martin, spokesman for the Grocery Manufacturers Association. \"There's been a sea change in the last couple of years, and I don't think that's very well reflected in this report.\" The panel assessed hundreds of studies, then reviewed evidence from 123 of them and completed the most comprehensive review to date on the scientific evidence of how food marketing affects kids' diets.",
+                    "shorter_text": "{HS}Television advertising strongly influences what children under 12 eat{HE}, and popular cartoon characters {HS}should be used to promote only healthy foods, a panel of scientists said in a report{HE} released Tuesday. {HS}The report by the Institute of Medicine said the food industry should spend its marketing dollars on nutritious food and drinks.{HE} \"The foods advertised are predominantly high in calories and low in nutrition _ the sort of diet that puts children's long-term health at risk,\" said J. Michael McGinnis, a senior scholar at the institute and chairman of the report committee. The report said evidence is limited on whether TV advertising leads to obesity in children. A study hasn't been done that would demonstrate a direct cause and effect. Still, {HS}the panel found the evidence compelling enough to call for a concerted effort to change the nature of foods being marketed to children{HE}, said panel member Ellen A. Wartella, psychology professor at the University of California, Riverside. The growth in new food products targeted to kids has been huge, from 52 introduced in 1994 to nearly 500 introduced last year, the report said. \"Overwhelmingly, those foods are high-calorie, low-nutrient foods, not the kind of foods that are recommended for children to eat,\" Wartella said. The findings were no surprise to Iowa Sen. Tom Harkin, who requested the report. \"We like to think that SpongeBob SquarePants and Shrek and the pretty little princesses are likable, kid-friendly characters, but they're being used to manipulate vulnerable children to make unhealthy choices,\" said Harkin, the senior Democrat on the Senate Agriculture, Nutrition and Forestry Committee. \"The industry must stop pushing junk food on our kids,\" Harkin said. Nickelodeon in October announced a campaign aimed at persuading kids to eat healthy foods and to get up off the couch and move. {HS}The campaign features former President Bill Clinton and the cartoon characters{HE} SpongeBob SquarePants and Dora the Explorer. {HS}Among children and adolescents from ages 6 through 19, obesity rates have tripled over the past 40 years.{HE} {HS}Obesity increases the risks of type 2 diabetes{HE}"
+                }
+            ],
+            "planning": [
+                {
+                    "output": "Dr. George Bray, founding president of the North American Association for the Study of Obesity, warns that high-fructose corn syrup is a strong culprit behind childhood obesity.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [1,2,3,4,5],
+                            "relative_highlights": [1,2,3,4,5]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the connection between high-fructose corn syrup and obesity",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "Obesity among children has tripled itself in the last 30-40 years.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [6,7],
+                            "relative_highlights": [6,7]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [28],
+                            "relative_highlights": [6]
+                        }
+                    ],
+                    "cluster_CoT_topic": "obesity rates in children",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "Obesity increases the risk for type 2 diabetes.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [8],
+                            "relative_highlights": [8]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [29],
+                            "relative_highlights": [7]
+                        }
+                    ],
+                    "cluster_CoT_topic": "obesity's diabetes-related risks",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "Bray believes that environmental factors have more to do with obesity than genetics.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [12,13],
+                            "relative_highlights": [12,13]
+                        }
+                    ],
+                    "cluster_CoT_topic": "which factors might account for obesity",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "He suggests that childhood obesity can be prevented by getting more sleep, decreasing sedentary activities, drinking more milk (calcium controls weight), thinking portion control and eating breakfast.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [9,10,11,14,15,16,17,18,19],
+                            "relative_highlights": [9,10,11,14,15,16,17,18,19]
+                        }
+                    ],
+                    "cluster_CoT_topic": "how obesity might be prevented",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "An Institute of Medicine report found compelling evidence encouraging the food industry to change the nature of foods being marketed to children.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 3,
+                            "highlights": [23,24,25,26],
+                            "relative_highlights": [1,2,3,4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the Institute of Medicine's report",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "Former US president Bill Clinton announced a 10-year initiative to combat childhood obesity, and also participated in an obesity-battling campaign invloving several cartoon characters.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [20,21],
+                            "relative_highlights": [1,2]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [27],
+                            "relative_highlights": [5]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Bill Clinton's involvement in battling obesity",
+                    "blueprint_QAs": []
+                },
+                {
+                    "output": "Clinton's involvement comes from his own health-related experience.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 2,
+                            "highlights": [22],
+                            "relative_highlights": [3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the reason behind Bill Clinton's ivolvement in battling obesity",
+                    "blueprint_QAs": []
+                }
+            ]
+        },
+        {
+            "answer": "The Columbian Navy captured a member of the rebel group, Revolutionary Armed Forces of Columbia (FARC), who was believed to be involved in slaughtering five members of the same family. FARC, with about 17,000 fighters and a smaller leftist guerilla group are locked in a 40-year civil war with the government. Considered the largest rebel organization in Colombia, FARC is also its oldest. FARC allegedly finances itself through drug trafficking and kidnappings. About 3,500 people are killed yearly. The United States warned its citizens in Colombia on Wednesday of a possible spike in \"terrorist activity\". This warning was issued due to the one-year anniversary of the death of Edgar Gustavo Navarro, one of FARC's commanders. Navarro is believed to have been responsible for the abduction of three American citizens. In an attempt to free them, as well as other hostages, including politicians, soldiers and police officers, the Colombian government agreed to meet with FARC members.",
+            "docs": [
+                {
+                    "text": "{HS}The United States on Wednesday warned US citizens of a possible spike in \"terrorist activity\" in Colombia{HE} in the coming week {HS}as the left-wing Revolutionary Armed Forces of Colombia (FARC) mark the one-year anniversary of the death of one of their commanders.{HE} The State Department, through the US embassy in Bogota, urged Americans in Colombia to boost their security precautions ahead of the October 19 {HS}anniversary of the death of Edgar Gustavo Navarro{HE}, believed to have been responsible for the taking of three US hostages in February 2003. \"The embassy wishes to inform American citizens throughout Colombia of the possibility of increased terrorist activity in connection with the upcoming October 19 Anniversary of a FARC leader's death,\" it said. \"Americans are urged to maintain a heightened level of vigilance and to continue practicing good security measures during this time,\" it said in a notice to US citizens, a copy of which was provided to AFP in Washington by the State Department. Navarro, who was killed in combat last year, is {HS}thought by Colombian authorities to have been behind the abduction of the three Americans{HE} -- Marc Gonsalves, Thomas Howes and Keith Stansell -- after their anti-drug flight crashed in a FARC stronghold in the Colombian Amazon. The trio remain in captivity despite a five-million-dollar US reward for information leading to their release and an August offer from Colombian President Alvaro Uribe to swap 50 imprisoned rebels for their freedom along with that of 22 {HS}politicians{HE} and 34 {HS}soldiers and police officers held by the FARC.{HE} {HS}The FARC with about 17,000 fighters and a smaller leftist guerrilla group{HE}, the National Liberation Army (ELN) with some 6,000 members, {HS}have been locked in a 40-year civil war{HE} against the Colombian government. The conflict has claimed more than 200,000 lives. Both groups, along with the right-wing paramilitary United Self Defense Force of Colombia (AUC), are designated \"foreign terrorist organizations\" by the United States and subject to US sanctions.",
+                    "shorter_text": "{HS}The United States on Wednesday warned US citizens of a possible spike in \"terrorist activity\" in Colombia{HE} in the coming week {HS}as the left-wing Revolutionary Armed Forces of Colombia (FARC) mark the one-year anniversary of the death of one of their commanders.{HE} The State Department, through the US embassy in Bogota, urged Americans in Colombia to boost their security precautions ahead of the October 19 {HS}anniversary of the death of Edgar Gustavo Navarro{HE}, believed to have been responsible for the taking of three US hostages in February 2003. \"The embassy wishes to inform American citizens throughout Colombia of the possibility of increased terrorist activity in connection with the upcoming October 19 Anniversary of a FARC leader's death,\" it said. \"Americans are urged to maintain a heightened level of vigilance and to continue practicing good security measures during this time,\" it said in a notice to US citizens, a copy of which was provided to AFP in Washington by the State Department. Navarro, who was killed in combat last year, is {HS}thought by Colombian authorities to have been behind the abduction of the three Americans{HE} -- Marc Gonsalves, Thomas Howes and Keith Stansell -- after their anti-drug flight crashed in a FARC stronghold in the Colombian Amazon. The trio remain in captivity despite a five-million-dollar US reward for information leading to their release and an August offer from Colombian President Alvaro Uribe to swap 50 imprisoned rebels for their freedom along with that of 22 {HS}politicians{HE} and 34 {HS}soldiers and police officers held by the FARC.{HE} {HS}The FARC with about 17,000 fighters and a smaller leftist guerrilla group{HE}, the National Liberation Army (ELN) with some 6,000 members, {HS}have been locked in a 40-year civil war{HE}"
+                },
+                {
+                    "text": "Colombia's hardline government said Friday {HS}it is willing to meet with members of the country's main leftist rebel group in an unprecedented offer aimed at freeing dozens of rebel hostages{HE}, {HS}including three Americans.{HE} Before any face-to-face meeting can take place, however, the rebels must agree to swap 15 hostages for 15 rebels jailed on minor charges, said Peace Commissioner Luis Carlos Restrepo. Despite mistrust on both sides, Restrepo said the government is willing to release the 15 jailed rebels first, provided the rebel Revolutionary Armed Forces of Colombia, or FARC, at least expresses a willingness to reciprocate. {HS}The FARC's hostages include politicians, police officers, soldiers and three U.S. contractors{HE} whose small plane crashed in rebel-held territory early last year. Restrepo said the government would allow the Red Cross to escort to the capital any FARC members taking part in the talks and would return them home when the talks end, accompanied by the Roman Catholic Church representatives. Augusto Castro, vice president of the Catholic Church's ruling body in Colombia, said he hopes the FARC reacts positively to the offer. \"This proposal addresses the need to find a solution at a time when we are all concerned about being on a street with no exits,\" said Castro. {HS}The FARC and a smaller rebel group have been battling a succession of elected governments in this Andean nation for 40 years{HE}.",
+                    "shorter_text": "Colombia's hardline government said Friday {HS}it is willing to meet with members of the country's main leftist rebel group in an unprecedented offer aimed at freeing dozens of rebel hostages{HE}, {HS}including three Americans.{HE} Before any face-to-face meeting can take place, however, the rebels must agree to swap 15 hostages for 15 rebels jailed on minor charges, said Peace Commissioner Luis Carlos Restrepo. Despite mistrust on both sides, Restrepo said the government is willing to release the 15 jailed rebels first, provided the rebel Revolutionary Armed Forces of Colombia, or FARC, at least expresses a willingness to reciprocate. {HS}The FARC's hostages include politicians, police officers, soldiers and three U.S. contractors{HE} whose small plane crashed in rebel-held territory early last year. Restrepo said the government would allow the Red Cross to escort to the capital any FARC members taking part in the talks and would return them home when the talks end, accompanied by the Roman Catholic Church representatives. Augusto Castro, vice president of the Catholic Church's ruling body in Colombia, said he hopes the FARC reacts positively to the offer. \"This proposal addresses the need to find a solution at a time when we are all concerned about being on a street with no exits,\" said Castro. {HS}The FARC and a smaller rebel group have been battling a succession of elected governments in this Andean nation for 40 years{HE}."
+                },
+                {
+                    "text": "{HS}Five members of a Colombian family were killed{HE} and another one injured in a deep night attack, which police said on Saturday was conducted by the country's largest rebel group FARC. The family was attacked Friday night by eight armed men dressed up as civilians in Colombia's Sucre department, local police commander Colonel Carlos Millan said. Four women, including one with four-month pregnancy, and one man were killed in the attack and another one injured on legs, Millan said. He said Front 35, a rebel group belonging to the FARC, did the attack. According to press reports, two of the killed women, aged 21 and 26, were girl friends of local police staff. The FARC, with 20,000 combatants, is the country's largest and oldest rebel organization and {HS}allegedly finances itself through drug trafficking and kidnappings.{HE} Colombia has been plagued by a {HS}four-decade civil war{HE}, in which leftist rebels, far-right paramilitary and government troops fight each other, {HS}killing 3,500 people every year.{HE}",
+                    "shorter_text": "{HS}Five members of a Colombian family were killed{HE} and another one injured in a deep night attack, which police said on Saturday was conducted by the country's largest rebel group FARC. The family was attacked Friday night by eight armed men dressed up as civilians in Colombia's Sucre department, local police commander Colonel Carlos Millan said. Four women, including one with four-month pregnancy, and one man were killed in the attack and another one injured on legs, Millan said. He said Front 35, a rebel group belonging to the FARC, did the attack. According to press reports, two of the killed women, aged 21 and 26, were girl friends of local police staff. The FARC, with 20,000 combatants, is the country's largest and oldest rebel organization and {HS}allegedly finances itself through drug trafficking and kidnappings.{HE} Colombia has been plagued by a {HS}four-decade civil war{HE}, in which leftist rebels, far-right paramilitary and government troops fight each other, {HS}killing 3,500 people every year.{HE}"
+                },
+                {
+                    "text": "{HS}The Colombian Navy has captured a member of the rebel Revolutionary Armed Forces of Colombia (FARC){HE}, who was believed to be involved in the slaughtering of five members of the same family, authorities said Wednesday. The rebel was identified as Willinton Quiroz, also known as \" Juan Carlos,\" of Front 35 of the FARC. Quiroz was also wanted for crimes of rebellion and terrorism, said the Navy. The slaughter occurred last Friday night in the rural area of Coloso in northern Sucre province. Several armed men broke into houses inhabited by the same family. Among the victims were the girl friends of a police agent and a soldier. One victim was pregnant for four months. {HS}The FARC, the largest guerrilla force in Colombia{HE}, is accused of committing selective murders and slaughters, as well as terrorist acts in different parts of the South American country.",
+                    "shorter_text": "{HS}The Colombian Navy has captured a member of the rebel Revolutionary Armed Forces of Colombia (FARC){HE}, who was believed to be involved in the slaughtering of five members of the same family, authorities said Wednesday. The rebel was identified as Willinton Quiroz, also known as \" Juan Carlos,\" of Front 35 of the FARC. Quiroz was also wanted for crimes of rebellion and terrorism, said the Navy. The slaughter occurred last Friday night in the rural area of Coloso in northern Sucre province. Several armed men broke into houses inhabited by the same family. Among the victims were the girl friends of a police agent and a soldier. One victim was pregnant for four months. {HS}The FARC, the largest guerrilla force in Colombia{HE}"
+                },
+                {
+                    "text": "The office of the UN High Commissioner for Human Rights on Thursday condemned {HS}the killing of five members of the same family{HE} in north Colombia last Friday, local press said. The UN office demanded the rebel Revolutionary Armed Forces of Colombia (FARC) clarify whether it was responsible for the crime. It also asked the group to ensure strict compliance of its members with international humanitarian law. Five members of the same family, four of them women, were murdered last Friday by armed individuals who broke into their house in Coloso in the northern Sucre province. One of the victims was pregnant for four months. Two others were girl friends of a soldier and a police agent of the area. The Sucre authorities blamed FARC guerrillas for the killing, who has not yet claimed responsibility. The UN office believed the women were murdered because of their relationship with law enforcement officers. The Colombian authorities on Wednesday captured a FARC member who was suspected of being involved in the Coloso killing. {HS}The FARC, with 17,000 members, is the country's largest and oldest rebel organization.{HE} Colombia has been plagued by a {HS}four-decade civil war{HE}, in which leftist rebels, far-right paramilitaries and government troops fight each other, killing about 3,500 people every year.",
+                    "shorter_text": "The office of the UN High Commissioner for Human Rights on Thursday condemned {HS}the killing of five members of the same family{HE} in north Colombia last Friday, local press said. The UN office demanded the rebel Revolutionary Armed Forces of Colombia (FARC) clarify whether it was responsible for the crime. It also asked the group to ensure strict compliance of its members with international humanitarian law. Five members of the same family, four of them women, were murdered last Friday by armed individuals who broke into their house in Coloso in the northern Sucre province. One of the victims was pregnant for four months. Two others were girl friends of a soldier and a police agent of the area. The Sucre authorities blamed FARC guerrillas for the killing, who has not yet claimed responsibility. The UN office believed the women were murdered because of their relationship with law enforcement officers. The Colombian authorities on Wednesday captured a FARC member who was suspected of being involved in the Coloso killing. {HS}The FARC, with 17,000 members, is the country's largest and oldest rebel organization.{HE} Colombia has been plagued by a {HS}four-decade civil war{HE}"
+                }
+            ],
+            "planning": [
+                {
+                    "output":"The Columbian Navy captured a member of the rebel group, Revolutionary Armed Forces of Columbia (FARC), who was believed to be involved in slaughtering five members of the same family.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 3,
+                            "highlights": [13],
+                            "relative_highlights": [1]
+                        },
+                        {
+                            "doc": 4,
+                            "highlights": [17],
+                            "relative_highlights": [1]
+                        },
+                        {
+                            "doc": 5,
+                            "highlights": [19],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the killing of five family members by a rebel group, and the consequent capturing of one of the group's members",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How many members of a Colombian family were killed?",
+                            "a": "five"
+                        },
+                        {
+                            "q": "Who was captured by the Colombian Navy?",
+                            "a": "a member of the rebel Revolutionary Armed Forces of Colombia (FARC)"
+                        }
+                    ]
+                },
+                {
+                    "output":"FARC, with about 17,000 fighters and a smaller leftist guerilla group are locked in a 40-year civil war with the government.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 1,
+                            "highlights": [7,8],
+                            "relative_highlights": [7,8]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [12],
+                            "relative_highlights": [4]
+                        },
+                        {
+                            "doc": 3,
+                            "highlights": [15],
+                            "relative_highlights": [3]
+                        },
+                        {
+                            "doc": 5,
+                            "highlights": [21],
+                            "relative_highlights": [3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "two Colombian rebel groups and the civil war they are a part of",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How many fighters does FARC have?",
+                            "a": "17,000"
+                        },
+                        {
+                            "q": "Who has been engaged in a civil war with the Colombian government?",
+                            "a": "The FARC and a smaller rebel group"
+                        },
+                        {
+                            "q": "How long has the Colombian civil-war been going on?",
+                            "a": "40 years"
+                        }
+                    ]
+                },
+                {
+                    "output":"Considered the largest rebel organization in Colombia, FARC is also its oldest.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 4,
+                            "highlights": [18],
+                            "relative_highlights": [2]
+                        },
+                        {
+                            "doc": 5,
+                            "highlights": [20],
+                            "relative_highlights": [2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the fact that FARC is Colombia's largest and oldest rebel group",
+                    "blueprint_QAs": [
+                        {
+                            "q": "Who is Colombia's largest rebel group?",
+                            "a": "FARC"
+                        },
+                        {
+                            "q": "Who is Colombia's oldest rebel group?",
+                            "a": "FARC"
+                        }
+                    ]
+                },
+                {
+                    "output":"FARC allegedly finances itself through drug trafficking and kidnappings.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 3,
+                            "highlights": [14],
+                            "relative_highlights": [2]
+                        }
+                    ],
+                    "cluster_CoT_topic": "how FARC finances itself",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How is FARC claimed to finance itself?",
+                            "a": "through drug trafficking and kidnappings"
+                        }
+                    ]
+                },
+                {
+                    "output":"About 3,500 people are killed yearly.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 3,
+                            "highlights": [16],
+                            "relative_highlights": [4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "how many people are killed yearly in the Colombian civil war",
+                    "blueprint_QAs": [
+                        {
+                            "q": "How many people are killed every year in the Colombian civil war?",
+                            "a": "3,500"
+                        }
+                    ]
+                },
+                {
+                    "output":"The United States warned its citizens in Colombia on Wednesday of a possible spike in \"terrorist activity\".",
+                    "highlights_cluster":[
+                        {
+                            "doc": 1,
+                            "highlights": [1],
+                            "relative_highlights": [1]
+                        }
+                    ],
+                    "cluster_CoT_topic": "a US warning to its citizens",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What did the united states warn US citizens of?",
+                            "a": "a possible spike in \"terrorist activity\" in Colombia"
+                        },
+                        {
+                            "q": "When did the United States warn its citizens?",
+                            "a": "on Wednesday"
+                        }
+                    ]
+                },
+                {
+                    "output": "This warning was issued due to the one-year anniversary of the death of Edgar Gustavo Navarro, one of FARC's commanders.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [2,3],
+                            "relative_highlights": [2,3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "the reason for the American warning - the one year anniversary of the death of Edgar Gustavo Navarro",
+                    "blueprint_QAs": [
+                        {
+                            "q": "What does FARC mark?",
+                            "a": "the one-year anniversary of the death of one of their commanders"
+                        },
+                        {
+                            "q": "Whose anniversary of the death is being marked?",
+                            "a": "Edgar Gustavo Navarro"
+                        }
+                    ]
+                },
+                {
+                    "output": "Navarro is believed to have been responsible for the abduction of three American citizens.",
+                    "highlights_cluster": [
+                        {
+                            "doc": 1,
+                            "highlights": [4],
+                            "relative_highlights": [4]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Navarro's connection to the abduction of Americans",
+                    "blueprint_QAs": [
+                        {
+                            "q": "Who do Colombian authorities think was behind the abduction of the three Americans?",
+                            "a": "Navarro"
+                        }
+                    ]
+                },
+                {
+                    "output":"In an attempt to free them, as well as other hostages, including politicians, soldiers and police officers, the Colombian government agreed to meet with FARC members.",
+                    "highlights_cluster":[
+                        {
+                            "doc": 1,
+                            "highlights": [5,6],
+                            "relative_highlights": [5,6]
+                        },
+                        {
+                            "doc": 2,
+                            "highlights": [9,10,11],
+                            "relative_highlights": [1,2,3]
+                        }
+                    ],
+                    "cluster_CoT_topic": "Colombian government's agreement to meet FARC memebers to free hostages",
+                    "blueprint_QAs": [
+                        {
+                            "q": "Who is willing to meet with members of the country's main leftist rebel group?",
+                            "a": "Colombia's hardline government"
+                        },
+                        {
+                            "q": "Why did Colombia's hardline government agree to meet with members of the country's main leftist rebel group?",
+                            "a": "freeing dozens of rebel hostages"
+                        },
+                        {
+                            "q": "Who are being held by FARC?",
+                            "a": "politicians"
+                        },
+                        {
+                            "q": "Who are being held by FARC?",
+                            "a": "soldiers"
+                        },
+                        {
+                            "q": "Who are being held by FARC?",
+                            "a": "police officers"
+                        }                                
+                    ]
+                }
+            ]
+        }
+    ]
+}
