@@ -248,7 +248,7 @@ def iterative_sent_gen_prompting(alignments_dict, prompt_dict, used_demos, model
                                                     "generation_history":generation_history})
     return final_data_instances
 
-def get_set_of_highlights_in_context_iterative_sent_gen(curr_instance, curr_original_inst):
+def get_set_of_highlights_in_context_iterative_sent_gen(curr_instance, *args, **kwargs):
     highlights_in_context_list = []
     final_output = ""
     curr_scuSentCharIdx = 0
@@ -268,12 +268,10 @@ def get_set_of_highlights_in_context_iterative_sent_gen(curr_instance, curr_orig
     assert sum([len(elem['curr_alignments']) for elem in curr_instance['generation_history']]) == len(highlights_in_context_list), "num of final highlights in context doesn't match original number of highlights in context"
     return highlights_in_context_list, final_output.strip()
 
-def convert_iterative_sent_gen_to_pipeline_format(results, alignments_dict, *args):
-    nlp = spacy.load("en_core_web_sm")
+def convert_iterative_sent_gen_to_pipeline_format(results, alignments_dict, *args, **kwargs):
     pipeline_style_data = []
     for key,value in results.items():
         curr_original_inst = deepcopy([elem for elem in alignments_dict if elem["unique_id"]==key][0])
-        curr_documents = curr_original_inst["documents"]
         highlights_in_context, final_output = get_set_of_highlights_in_context_iterative_sent_gen(value, curr_original_inst)
         curr_original_inst.update({"set_of_highlights_in_context":highlights_in_context, 
                                    "response" : final_output, 
@@ -296,7 +294,7 @@ def main(args):
     if args.rerun:
         outdir = args.rerun_path
     else:
-        outdir = args.outdir if args.outdir else  f"results/{args.setting}/iterative_sent_gen{no_prefix_suffix}{merged_cross_sent_highlights_suffix}" 
+        outdir = args.outdir if args.outdir else  f"results/{args.setting}/iterative_sentence_generation{no_prefix_suffix}{merged_cross_sent_highlights_suffix}" 
     logging.info(f"saving results to {outdir}")
 
     # create outdir if doesn't exist

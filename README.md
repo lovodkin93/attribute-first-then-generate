@@ -59,7 +59,7 @@ where:
 
 For the iterative sentence generation, run:
 ```
-python run_iterative_sent_gen.py --config-file configs/<SPLIT>/<SETTING>/iterative_sentence_generation.json
+python run_iterative_sentence_generation.py --config-file configs/<SPLIT>/<SETTING>/iterative_sentence_generation.json
 ```
 where **SPLIT** and **SETTING** are the same as before.
 
