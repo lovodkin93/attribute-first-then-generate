@@ -1,0 +1,9 @@
+{
+    "split": "dev",
+    "setting": "MDS",
+    "subtask": "ALCE",
+    "model_name": "gemini-pro",
+    "n_demos": 2,
+    "num_retries": 5,
+    "temperature": 0.5
+}

@@ -1,0 +1,10 @@
+{
+    "split": "test",
+    "setting": "MDS",
+    "subtask": "clustering",
+    "model_name": "gemini-pro",
+    "n_demos": 2,
+    "num_retries": 5,
+    "temperature": 0.5,
+    "cut_surplus": true
+}

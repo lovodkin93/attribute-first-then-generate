@@ -1,0 +1,9 @@
+{
+    "split": "dev",
+    "setting": "MDS",
+    "model_name": "gemini-pro",
+    "n_demos": 3,
+    "num_retries": 5,
+    "temperature": 0.3,
+    "cut_surplus": true
+}

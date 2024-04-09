@@ -301,7 +301,7 @@ def parse_clustering_response(response, prompt):
     return {"final_output":clusters,
             "full_model_response":original_response}
 
-def parse_e2e_only_setting_response(response, *args):
+def parse_e2e_only_setting_response(response, *args, **kwargs):
     original_response = deepcopy(response)
     if response.strip().lower().startswith("answer:"):
         response = response[len("answer:"):].strip()
@@ -379,7 +379,7 @@ def parse_ALCE_response(response, prompt):
             "response_without_citations" : response_no_citations,
             "full_model_response" : original_response}
 
-def get_set_of_highlights_in_context_content_selection(doc_name, doc_text, highlights, nlp, doc_sents, *args):
+def get_set_of_highlights_in_context_content_selection(doc_name, doc_text, highlights, nlp, doc_sents, *args, **kwargs):
     if not doc_sents: # when in the gold data a document didn't have highlights, the corresponding doc_sents are None
         doc_sents = [sent.text for sent in nlp(doc_text).sents]
     sents_idx_limits = [find_substring(doc_text, sent) for sent in doc_sents]
@@ -462,7 +462,7 @@ def get_set_of_highlights_in_context_content_selection(doc_name, doc_text, highl
     highlights_in_context_list = [json.loads(elem) for elem in json_highlights_in_context_list]
     return highlights_in_context_list
 
-def convert_content_selection_results_to_pipeline_format(results, alignments_dict, *args):
+def convert_content_selection_results_to_pipeline_format(results, alignments_dict, *args, **kwargs):
     nlp = spacy.load("en_core_web_sm")
     pipeline_style_data = []
     for key,value in results.items():
@@ -483,7 +483,7 @@ def convert_content_selection_results_to_pipeline_format(results, alignments_dic
         pipeline_style_data.append(curr_original_inst)
     return pipeline_style_data
 
-def get_set_of_highlights_in_context_clustering(curr_instance, nlp, doc_sents, *args):
+def get_set_of_highlights_in_context_clustering(curr_instance, nlp, doc_sents, *args, **kwargs):
     highlights_in_context_list = []
     highlight_global_index = 1 # highlights enuemration starts from 1 in the prompts
     for doc_i,doc_highlights in enumerate(curr_instance['highlights']):
@@ -541,7 +541,7 @@ def get_set_of_highlights_in_context_ALCE(curr_instance):
     assert all(final_output[elem['scuSentCharIdx']:].startswith(elem['scuSentence']) for elem in highlights_in_context_list), "scuSentence doesn't match scuSentCharIdx"
     return highlights_in_context_list, final_output.strip()
     
-def convert_clustering_results_to_pipeline_format(results, alignments_dict, *args):
+def convert_clustering_results_to_pipeline_format(results, alignments_dict, *args, **kwargs):
     nlp = spacy.load("en_core_web_sm")
     pipeline_style_data = []
     for key,value in results.items():
@@ -557,7 +557,7 @@ def convert_clustering_results_to_pipeline_format(results, alignments_dict, *arg
         pipeline_style_data.append(curr_pipeline_style_data)
     return pipeline_style_data
 
-def convert_e2e_only_setting_to_pipeline_format(results, alignments_dict, *args):
+def convert_e2e_only_setting_to_pipeline_format(results, alignments_dict, *args, **kwargs):
         pipeline_style_data = []
         for key,value in results.items():
             original_alignments_dict = deepcopy([elem for elem in alignments_dict if elem['unique_id']==key][0])
@@ -567,7 +567,7 @@ def convert_e2e_only_setting_to_pipeline_format(results, alignments_dict, *args)
             pipeline_style_data.append(original_alignments_dict)
         return pipeline_style_data
 
-def convert_ALCE_to_pipeline_format(results, alignments_dict, *args):
+def convert_ALCE_to_pipeline_format(results, alignments_dict, *args, **kwargs):
         pipeline_style_data = []
         for key,value in results.items():
             curr_documents = [elem["documents"] for elem in alignments_dict if elem["unique_id"]==key][0]
@@ -579,7 +579,7 @@ def convert_ALCE_to_pipeline_format(results, alignments_dict, *args):
             pipeline_style_data.append(original_alignments_dict)
         return pipeline_style_data
 
-def get_set_of_highlights_in_context_FiC_CoT(curr_instance, nlp, doc_sents, *args):
+def get_set_of_highlights_in_context_FiC_CoT(curr_instance, nlp, doc_sents, *args, **kwargs):
     # find the clustered highlights, and then pair then with the corresponding sentences (According to their assigned scuSentCharIdx)
     clustering_style_instance_format = {"highlights":curr_instance["highlights"],
                                         "highlighted_docs":curr_instance["highlighted_docs"],
@@ -622,7 +622,7 @@ def get_set_of_highlights_in_context_FiC_CoT(curr_instance, nlp, doc_sents, *arg
             highlights_in_context_list += relevant_clustered_highlights_in_context
     return highlights_in_context_list
 
-def convert_FiC_CoT_results_to_pipeline_format(results, alignments_dict, *args):
+def convert_FiC_CoT_results_to_pipeline_format(results, alignments_dict, *args, **kwargs):
     nlp = spacy.load("en_core_web_sm")
     pipeline_style_data = []
     for key,value in results.items():

@@ -1,0 +1,10 @@
+{
+    "split": "test",
+    "setting": "LFQA",
+    "model_name": "gemini-pro",
+    "n_demos": 2,
+    "num_retries": 5,
+    "temperature": 0.1,
+    "always_with_question": true,
+    "cut_surplus": true
+}

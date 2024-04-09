@@ -1,4 +1,5 @@
 import json
+import argparse
 import os
 import pandas as pd
 from tqdm import tqdm
@@ -45,7 +46,17 @@ class TokenCounter:
             return self.model.count_tokens(prompt).total_tokens
         else:
             raise NotImplementedError(f"token_count for {self.model_name} not supported yet. Please add support.")
-   
+
+def update_args(args):
+    """update args with arguments from config file"""
+    with open(args.config_file, 'r') as f1:
+        updated_args = json.loads(f1.read())
+    additional_args = {key:value for key,value in args.__dict__.items() if not key in updated_args.keys()}
+    assert not set(additional_args.keys()).intersection(set(updated_args.keys())), "overlapping keys"
+    updated_args.update(additional_args)
+    return argparse.Namespace(**updated_args)
+
+
 def get_token_counter(model_name):
     if model_name=="gemini-pro":
         return {"tkn_counter" : TokenCounter(model_name),

@@ -1,0 +1,11 @@
+{
+    "split": "dev",
+    "setting": "MDS",
+    "subtask": "FiC",
+    "model_name": "gemini-pro",
+    "n_demos": 3,
+    "num_retries": 5,
+    "temperature": 0.1,
+    "cut_surplus": true,
+    "CoT": true
+}

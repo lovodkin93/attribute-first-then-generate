@@ -1,0 +1,10 @@
+{
+    "split": "test",
+    "setting": "LFQA",
+    "subtask": "content_selection",
+    "model_name": "gemini-pro",
+    "n_demos": 4,
+    "num_retries": 5,
+    "temperature": 0.3,
+    "always_with_question": true
+}

@@ -1,0 +1,12 @@
+{
+    "split": "test",
+    "setting": "LFQA",
+    "subtask": "FiC",
+    "model_name": "gemini-pro",
+    "n_demos": 1,
+    "num_retries": 5,
+    "temperature": 0.3,
+    "always_with_question": true,
+    "cut_surplus": true,
+    "CoT": true
+}

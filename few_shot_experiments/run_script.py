@@ -1,4 +1,3 @@
-import argparse
 from utils import *
 from subtask_specific_utils import *
 import logging
@@ -8,12 +7,17 @@ logging.basicConfig(level=logging.INFO)
 
 def main(args):
 
+    if not args.config_file and (not args.setting or not args.subtask or not args.split):
+        raise Exception("If no config file is passed, then must explicitly determine setting, subtask, and split.")
+    
+    # if config_file is passed - load its arguments
+    if args.config_file:
+        args = update_args(args)
+
     # get the outdir
     CoT_suffix = "_CoT" if args.CoT else ""
-    cut_surplus_suffix="_shortened_prompts" if args.cut_surplus else ""
     merged_cross_sent_highlights_suffix = "_merged_cross_sents_sep" if args.merge_cross_sents_highlights else ""
-    outdir = args.outdir if args.outdir else  f"results/{args.setting}/{args.subtask}{CoT_suffix}{cut_surplus_suffix}{merged_cross_sent_highlights_suffix}"
-    outdir = os.path.join(outdir, f"{args.model_name}_num_demos_{args.n_demos}")
+    outdir = args.outdir if args.outdir else  f"results/{args.setting}/{args.subtask}{CoT_suffix}{merged_cross_sent_highlights_suffix}"
     logging.info(f"saving results to {outdir}")
 
     # create outdir if doesn't exist
@@ -29,11 +33,9 @@ def main(args):
     # get subtask related functions
     parse_response_func, convert_to_pipeline_style_func = get_subtask_funcs(args.subtask)
 
-
     if args.cut_surplus and args.subtask in SUBTASK_WITHOUT_GIVEN_HIGHLIGHTS and not args.prct_surplus:
         logging.error(f"when passing --cut-surplus with the subtask {args.subtask} - you need to also pass --prct-surplus")
         exit(1)
-
 
     # get subtask related prompt structures (instructions and answer-related)
     specific_prompt_details = get_subtask_prompt_structures(prompt_dict=prompt_dict, setting=args.setting, subtask=args.subtask, CoT=args.CoT, always_with_question=args.always_with_question)
@@ -49,14 +51,12 @@ def main(args):
                                                              cut_surplus=args.cut_surplus,
                                                              prct_surplus=args.prct_surplus)
 
-
     responses = prompt_model(prompts=prompts, 
                              model_name=args.model_name, 
                              parse_response_fn=parse_response_func, 
                              num_retries=args.num_retries, 
                              temperature=args.temperature)
 
-    
     ############# SAVE #############
     # combine results with all instances' details
     final_results = {key:dict() for key in responses.keys()}
@@ -79,13 +79,14 @@ def main(args):
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description="")
-    argparser.add_argument('--split', type=str, default="test", help='data split (test or dev)')
-    argparser.add_argument('--setting', type=str, required=True, help='setting (MDS or LFQA)')
-    argparser.add_argument('--subtask', type=str, required=True, help='subtask to run (content_selection, clustering, FiC, e2e_only_setting, ALCE)')
+    argparser.add_argument('--config-file', type=str, default=None, help='path to json config file. Should come instead of all the other parameters')
+    argparser.add_argument('--split', type=str, default=None, help='data split (test or dev)')
+    argparser.add_argument('--setting', type=str, default=None, help='setting (MDS or LFQA)')
+    argparser.add_argument('--subtask', type=str, default=None, help='subtask to run (content_selection, clustering, FiC, e2e_only_setting, ALCE)')
     argparser.add_argument('--indir-alignments', type=str, default=None, help='path to json file with alignments (if nothing is passed - goes to default under data/{setting}/{split}.json).')
     argparser.add_argument('--indir-prompt', type=str, default=None, help='path to json file with the prompt structure and ICL examples (if nothing is passed - goes to default under prompts/{setting}.json).')
     argparser.add_argument('-o', '--outdir', type=str, default=None, help='path to output csv.')
-    argparser.add_argument('--model-name', type=str, default="meta-llama/Llama-2-7b-hf", help='model name')
+    argparser.add_argument('--model-name', type=str, default="gemini-pro", help='model name')
     argparser.add_argument('--n-demos', type=int, default=2, help='number of ICL examples (default 2)')
     argparser.add_argument('--num-retries', type=int, default=1, help='number of retries of running the model.')
     argparser.add_argument('--temperature', type=float, default=0.2, help='temperature of generation')

@@ -2,7 +2,6 @@ import json
 import os
 from tqdm import tqdm
 import numpy as np
-import argparse
 from utils import *
 import logging
 from pathlib import Path
@@ -269,8 +268,6 @@ def get_set_of_highlights_in_context_iterative_sent_gen(curr_instance, curr_orig
     assert sum([len(elem['curr_alignments']) for elem in curr_instance['generation_history']]) == len(highlights_in_context_list), "num of final highlights in context doesn't match original number of highlights in context"
     return highlights_in_context_list, final_output.strip()
 
-
-
 def convert_iterative_sent_gen_to_pipeline_format(results, alignments_dict, *args):
     nlp = spacy.load("en_core_web_sm")
     pipeline_style_data = []
@@ -286,15 +283,20 @@ def convert_iterative_sent_gen_to_pipeline_format(results, alignments_dict, *arg
     return pipeline_style_data
 
 def main(args):
+    if not args.config_file and (not args.setting or not args.split):
+        raise Exception("If no config file is passed, then must explicitly determine setting and split.")
+
+    # if config_file is passed - load its arguments
+    if args.config_file:
+        args = update_args(args)
+
     # get the outdir
-    cut_surplus_suffix = "_shortened_prompts" if args.cut_surplus else ""
     no_prefix_suffix = "_no_prefix" if args.no_prefix else ""
     merged_cross_sent_highlights_suffix = "_merged_cross_sents_sep" if args.merge_cross_sents_highlights else ""
     if args.rerun:
         outdir = args.rerun_path
     else:
-        outdir = args.outdir if args.outdir else  f"results/{args.setting}/iterative_sent_gen{cut_surplus_suffix}{merged_cross_sent_highlights_suffix}" 
-        outdir = os.path.join(outdir, f"{args.model_name}_num_demos_{args.n_demos}{no_prefix_suffix}")
+        outdir = args.outdir if args.outdir else  f"results/{args.setting}/iterative_sent_gen{no_prefix_suffix}{merged_cross_sent_highlights_suffix}" 
     logging.info(f"saving results to {outdir}")
 
     # create outdir if doesn't exist
@@ -392,12 +394,13 @@ def main(args):
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description="")
+    argparser.add_argument('--config-file', type=str, default=None, help='path to json config file. Should come instead of all the other parameters')
     argparser.add_argument('--indir-alignments', type=str, default=None, help='path to json file with alignments (if nothing is passed - goes to default under data/{setting}/{split}.json).')
     argparser.add_argument('--indir-prompt', type=str, default=None, help='path to json file with the prompt structure and ICL examples (if nothing is passed - goes to default under prompts/{setting}.json).')
-    argparser.add_argument('--setting', type=str, required=True, help='setting (MDS or LFQA)')
-    argparser.add_argument('--split', type=str, required=True, help='data split (test or dev)')
+    argparser.add_argument('--setting', type=str, default=None, help='setting (MDS or LFQA)')
+    argparser.add_argument('--split', type=str, default=None, help='data split (test or dev)')
     argparser.add_argument('-o', '--outdir', type=str, default=None, help='path to output csv.')
-    argparser.add_argument('--model-name', type=str, default="meta-llama/Llama-2-7b-hf", help='model name')
+    argparser.add_argument('--model-name', type=str, default="gemini-pro", help='model name')
     argparser.add_argument('--n-demos', type=int, default=2, help='number of ICL examples (default 2)')
     argparser.add_argument('--num-retries', type=int, default=1, help='number of retries of running the model.')
     argparser.add_argument('--num-demo-changes', type=int, default=4, help='number of changing demos when the currently-chosen set of demos returns an ERROR.')
