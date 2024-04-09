@@ -63,10 +63,14 @@ python run_iterative_sent_gen.py --config-file configs/<SPLIT>/<SETTING>/iterati
 ```
 where **SPLIT** and **SETTING** are the same as before.
 
-When running each of the components of the pipeline, you will find in the outdir directory a file called `pipeline_format_results.json`.
+When running each of the components of the pipeline, you will find in the outdir directory a file called `pipeline_format_results.json`. \
 This file should be passed to the next component in the pipeline as input, by adding the following flag, in addition to `config_file`:
 ```
 --indir-alignments /path/to/pipeline_format_results.json
+```
+So for example, when running the full CoT variant, after running the *content selection* component, you should run:
+```
+python run_script.py --config-file configs/<SPLIT>/<SETTING>/fusion_in_context.json --indir-alignments /path/to/content_selection pipeline_format_results.json
 ```
 
 ## Fine-tuned models
