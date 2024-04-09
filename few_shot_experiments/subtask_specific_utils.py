@@ -22,7 +22,7 @@ def get_indir_paths(args):
     if type(args)!=dict: # i.e. argparse
         args = args.__dict__
     # get the prompt structures and ICL examples and the instances to run
-    indir_alignments = args['indir_alignments'] if args['indir_alignments'] else f"data/{args['setting']}/{args['split']}.json" 
+    indir_alignments = args['indir_alignments'] if args['indir_alignments'] else f"../data/{args['setting']}/{args['split']}.json" 
     indir_prompt = args['indir_prompt'] if args['indir_prompt'] else f"prompts/{args['setting']}.json" 
     return indir_prompt, indir_alignments
 
