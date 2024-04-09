@@ -172,7 +172,7 @@ def construct_prompts(prompt_dict : Dict, alignments_dict : List[Dict], n_demos 
             final_prompts[topic_name] = head_prompt_shorter + curr_prompt
         elif tkn_counter["tkn_counter"].token_count(head_prompt + curr_prompt)>=tkn_counter["tkn_max_limit"]: # the current prompt is too long - need to "cut" the surplus texts
             # check several such cut-off thr (until the first/smallest one catches) - rage from 0.05 and 0.5
-            prct_surplus_lst = np.linspace(0.05, 0.5, int((0.5 - 0.05) / 0.05) + 1)
+            prct_surplus_lst = [0.5, 0.6, 0.7]
             for curr_prct_surplus in prct_surplus_lst:
                 curr_prompt, curr_highlight_list_shorter, topic_name, docs_order_shorter = construct_non_demo_part(instance, merge_cross_sents_highlights, specific_prompt_details, prompt_dict, no_highlights, cut_surplus=True, prct_surplus=curr_prct_surplus)
                 if tkn_counter["tkn_counter"].token_count(head_prompt_shorter + curr_prompt)<tkn_counter["tkn_max_limit"]:
