@@ -53,15 +53,15 @@ For the different subtasks (except the iterative sentence generation), run:
 python run_script.py --config-file configs/<SPLIT>/<SETTING>/<SUBTASK>.json
 ```
 where:
-* **<SPLIT>** - dev or test
-* **<SETTING>** - MDS or LFQA
-* **<SUBTASK>** - either one of: content_selection, clustering, fusion_in_context, e2e_only_setting, or ALCE
+* *<SPLIT>* - dev or test
+* *<SETTING>* - MDS or LFQA
+* *<SUBTASK>* - either one of: content_selection, clustering, fusion_in_context, e2e_only_setting, or ALCE
 
 For the iterative sentence generation, run:
 ```
 python run_iterative_sent_gen.py --config-file configs/<SPLIT>/<SETTING>/iterative_sentence_generation.json
 ```
-where **<SPLIT>** and **<SETTING>** are the same as before.
+where *<SPLIT>* and *<SETTING>* are the same as before.
 
 When running each of the components of the pipeline, you will find in the outdir directory a file called `pipeline_format_results.json`.
 This file should be passed to the next component in the pipeline as input, by adding the following flag, in addition to `config_file`:
