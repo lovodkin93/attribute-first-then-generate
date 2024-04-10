@@ -4,7 +4,7 @@
     <img src="./First-attribute-then-generate architecture.jpg" width="60%" height="60%"  alt="taxonomy"/>
 </p>
 
-# Data format
+# Data Format
 
 ```python
 from dataclasses import dataclass
@@ -45,9 +45,11 @@ class Highlight:
     prefix: str  # previous summary sentences
     
 ```
-## Few-shot experiments
+## Few-shot Experiments
+
 Scripts for few-shot experiments are in the directory `few_shot_experiments`.
 
+### Separate Subtasks
 For the different subtasks (except the iterative sentence generation), run:
 ```
 python run_script.py --config-file configs/<SPLIT>/<SETTING>/<SUBTASK>.json
@@ -73,7 +75,16 @@ So for example, when running the full CoT variant, after running the *content se
 python run_script.py --config-file configs/<SPLIT>/<SETTING>/fusion_in_context.json --indir-alignments /path/to/content_selection pipeline_format_results.json
 ```
 
-## Fine-tuned models
+### Full Pipelines
+For the full pipelines, run:
+```
+python run_full_pipeline.py --config-file configs/<SPLIT>/<SETTING>/<PIPELINE_TYPE>.json
+```
+where **PIPELINE_TYPE** is one of the following:
+* `full_pipeline` - the pipeline consisting of three subtasks - content selection, clustering, and iterative sentence generation.
+* `full_CoT_pipeline` - the pipeline consisting of two subtasks - content selection and CoT-like sentence fusion.
+
+## Fine-tuned Models
 
 Scripts for fine-tuning models and running fine-tuned models are in the directory `fine-tuned`.
 
