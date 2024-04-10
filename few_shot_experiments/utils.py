@@ -507,12 +507,6 @@ def make_ALCE_prompt(sent_plan, prompt):
     cited_docs_str = "".join([f"[{str(i)}]" for i in cited_docs_ids])
     return prompt.replace("{ALCE_SENT}", sent_plan['output']).replace("{ALCE_CITATIONS}", cited_docs_str)
 
-def make_QA_blueprint_prompt(qa_elem, prompt):
-    # for QA-based blueprint prompt
-    # - {BLUEPRINT_Q}: the current blueprint question
-    # - {BLUEPRINT_A}: the current blueprint answer
-    return prompt.replace("{BLUEPRINT_Q}", qa_elem['q']).replace("{BLUEPRINT_A}", qa_elem['a'])
-
 def make_demo(item, prompt, doc_prompt=None, instruction=None, answer_related_prompts=None, highlight_start_tkn=None, highlight_end_tkn=None, test=False, content_selection=False):
     # For demo prompt
     # - {INST}: the instruction
@@ -531,10 +525,7 @@ def make_demo(item, prompt, doc_prompt=None, instruction=None, answer_related_pr
         prompt = prompt.replace("{HS}", "").replace("{HE}", "")
     
     if "{A}" in prompt:
-        if not test and "blueprint_eos" in answer_related_prompts.keys() and item['answer'] == answer_related_prompts["blueprint_eos"]: # blueprint variants when getting to the last sentence
-            prompt = prompt.replace("{A}", item['answer'])
-        else:
-            prompt = prompt.replace("{A}", answer_related_prompts["answer_prompt"])
+        prompt = prompt.replace("{A}", answer_related_prompts["answer_prompt"])
     
     if "{Q}" in prompt:
         prompt = prompt.replace("{Q}", item["question"])
@@ -558,26 +549,18 @@ def make_demo(item, prompt, doc_prompt=None, instruction=None, answer_related_pr
             highlights_cnt+=len(highlight_lists[doc_id]) # the listing should continue from the previous doc's enumeration
         prompt = prompt.replace("{HLIST}", highlights_list_text)
 
-    if "{PRFX}" in prompt: #sentence-wise fusion and blueprint variants
+    if "{PRFX}" in prompt: #sentence-wise fusion
         prompt = prompt.replace("{PRFX}", item['prefix'])
 
-    if "{BLUEPRINT_EOS}" in prompt: #blueprint variants
-        prompt = prompt.replace("{BLUEPRINT_EOS}", answer_related_prompts['blueprint_eos'])
-
     if not test:
-        if "{HDOCS}" in prompt or "{SPAN_BLUEPRINT_PLAN}" in prompt: # the content selection prompt or the span-based blueprint
+        if "{HDOCS}" in prompt: # the content selection prompt
             doc_list = item["docs"]
-            curr_answer_format = answer_related_prompts['answer_content_selection_format'] if "{HDOCS}" in prompt else answer_related_prompts['answer_blueprint_format'] 
+            curr_answer_format = answer_related_prompts['answer_content_selection_format'] 
             text = "\n".join([make_content_selection_prompt(highlights_list=highlight_lists[doc_id], 
                                                            doc_id=doc_id, 
                                                            answer_content_selection_format=curr_answer_format) for doc_id, doc in enumerate(doc_list)])
-            prompt = prompt.replace("{HDOCS}", text).replace("{SPAN_BLUEPRINT_PLAN}", text)
+            prompt = prompt.replace("{HDOCS}", text)
             prompt = prompt.replace("{HS}", highlight_start_tkn).replace("{HE}", highlight_end_tkn).strip()
-
-        if "{QA_BLUEPRINT_PLAN}" in prompt:
-            text = " ; ".join([make_QA_blueprint_prompt(qa_elem,
-                                                      answer_related_prompts['answer_blueprint_format']) for qa_elem in item['blueprint_QAs']])
-            prompt = prompt.replace("{QA_BLUEPRINT_PLAN}", text)
 
         if "{PLANNING}" in prompt: # the full FiC-CoT prompt
             prompt = prompt.replace("{PLANNING}", answer_related_prompts["answer_FiC_planning_prompt"])
@@ -607,7 +590,7 @@ def make_demo(item, prompt, doc_prompt=None, instruction=None, answer_related_pr
             clustering_text = ",".join([make_clustering_prompt(highlights_fuse_dict=fusion_dict, 
                                                                answer_clustering_format=answer_related_prompts["answer_clustering_format"]) for sent_id, fusion_dict in enumerate(item['planning'])])
             prompt = prompt.replace("{CLUSTERS}", f"[{clustering_text}]")
-        if "{NEXT_SENT}" in prompt: # the sentence-wise fusion and blueprint variants
+        if "{NEXT_SENT}" in prompt: # the sentence-wise fusion
             prompt = prompt.replace("{NEXT_SENT}", item['answer'])
 
     else:

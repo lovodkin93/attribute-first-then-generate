@@ -6,15 +6,11 @@
     "instruction-clustering": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). The goal is to fuse all those highlights into a single summary. As an intermediate step, you need to cluster highlights that can be merged into a sentence (namely, each cluster will be later merged into one sentence). Make sure the clusters are in the same order you would then write the corresponding summary sentences. IMORTANT: make sure there are at least 7 clusters, and no more than 5-6 highlights per cluster. IMPORTANT: The output must be of the format [{\"cluster\":[comma-delimited highlights indices]}]",
     "instruction-content-selection": "In this task, you are presented with several documents, which need to be summarized. As an intermediate step, you need to identify salient content within the documents. For each document, copy verbatim the salient spans, and use <SPAN_DELIM> as a delimiter between each consecutive span. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive salient spans. IMPORTANT: Each salient content must be a single consecutive verbatim span from the corresponding passages. IMPORTANT: make sure the total number of copied words (from all documents) is around 200 words, and not more than 900.",
     "instruction-next-cluster-fusion": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). You are also presented with a prefix of a paragraph. You job is to generate the next sentence in the paragraph, that covers all and only the \"highlighted\" spans. Make sure it connects well with the prefix, and that it covers all and only the \"highlighted\" spans.",
-    "instruction-iter-QA-blueprint": "In this task, you are presented with several documents and a prefix. The goal is to summarize the given documents. We will be building the output summary sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract a set of up to 5 question-answer pairs from the input documents that best describe the relevant information for the next sentence (acting as a plan), and then generate that sentence based on those question-answer pairs. IMORTANT: avoid redundancy compared to the prefix. IMPORTANT: make sure that the summary consists of approximately 200 words and at least 7 sentences. IMORTANT: the output must be of the form: Plan: A: <ANSWER1> Q: <QUESTION1> ; A: <ANSWER2> Q: <QUESTION2> ; ... So the next sentence is: <NEXT_SENT>. IMPORTANT: if the prefix is already a good summary, reply \"{BLUEPRINT_EOS}\".",
-    "instruction-iter-span-blueprint": "In this task, you are presented with several documents and a prefix. The goal is to summarize the given documents. We will be building the output summary sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract verbatim a set of relevant spans from the input documents that best describe the relevant information for the next sentence (acting as a plan), and use <SPAN_DELIM> as a delimiter between each consecutive span. Then, generate the next sentence based on those spans. IMORTANT: avoid redundancy compared to the prefix. IMPORTANT: make sure that the summary consists of approximately 200 words and at least 7 sentences. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive spans. IMPORTANT: Each such span must be a single consecutive verbatim span from the corresponding passages. IMPORTANT: if the prefix already properly answers the question, reply \"{BLUEPRINT_EOS}\".",
     "demo_sep": "\n\n\n",
     "highlight_start_tkn":"<highlight_start>",
     "highlight_end_tkn":"<highlight_end>",
-    "blueprint_eos": "STOP GENERATION",
     "demo_prompt": "{INST}\n\n{D}\n{A}",
     "demo_prompt_next_cluster_fusion": "{INST}\n\n{D}\nPrefix:{PRFX}\n{A}",
-    "demo_prompt_iter_blueprint": "{INST}\n\n{D}\nPrefix:{PRFX}\nAnswer: {A}",
     "doc_prompt": "Document [{ID}]: {P}\n",
     "answer_FiC_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nSo the summary is: {CoT_RESP}",
     "answer_FiC-CoT_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nThe highlighted spans are combined as follows:\n{PLANNING}",
@@ -32,10 +28,6 @@
     "answer_e2e_only_setting_prompt": "Answer: {RESP}",
     "answer_ALCE_prompt": "Answer: {ALCE_RESP}",
     "answer_ALCE_format": "{ALCE_SENT} {ALCE_CITATIONS}",
-    "answer_iter_QA_blueprint_prompt": "Plan:\n{QA_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
-    "answer_iter_span_blueprint_prompt": "Plan:\n{SPAN_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
-    "answer_iter_QA_blueprint_format": "A: {BLUEPRINT_A} Q: {BLUEPRINT_Q}",
-    "answer_iter_span_blueprint_format": "Document [{ID}]: {CONTENT_LIST}",
     "demos": [
         {
             "answer": "Martha Stewart spent Halloween, Thanksgiving, Christmas and New Year's in prison. Her job there was cleaning. During her stay, she did ceramics, crocheted, taught yoga, became an expert on vending-machine snacks, and foraged the grounds for fresh greens for the prison salads. She was incarcerated after being convicted in March for lying about a stock sale. She was grateful for the support of her friends, family, colleagues, and fans. Stewart became a prison reform advocate through her experience. Her presence in the Prison has brought many reporters and tourists to town of Alderson, helping its economy. She emerged from the Alderson prison on March 6 with head held high, 20 pounds lighter and a lot wealthier, since shares in her company nearly tripled in value. Following her release, Stewart is planned to host a daily live-audience program on NBC beginning this fall. The show is scheduled to begin once Stewart's five months of house arrest end.",
@@ -67,8 +59,7 @@
                             "relative_highlights": [1,2]
                         }
                     ],
-                    "cluster_CoT_topic": "Martha Stewart's spending of the holidays in prison",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "Martha Stewart's spending of the holidays in prison"
                 },  
                 {
                     "output": "Her job there was cleaning.",
@@ -79,8 +70,7 @@
                             "relative_highlights": [3,4]
                         }
                     ],
-                    "cluster_CoT_topic": "Stewart's job in prison",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "Stewart's job in prison"
                 },  
                 {
                     "output": "During her stay, she did ceramics, crocheted, taught yoga, became an expert on vending-machine snacks, and foraged the grounds for fresh greens for the prison salads.",
@@ -96,8 +86,7 @@
                             "relative_highlights": [3]
                         }
                     ],
-                    "cluster_CoT_topic": "what Stewart did in prison",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "what Stewart did in prison"
                 },  
                 {
                     "output": "She was incarcerated after being convicted in March for lying about a stock sale.",
@@ -113,8 +102,7 @@
                             "relative_highlights": [1]
                         }
                     ],
-                    "cluster_CoT_topic": "why Stewart was incarcerated",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "why Stewart was incarcerated"
                 }, 
                 {
                     "output": "She was grateful for the support of her friends, family, colleagues, and fans.",
@@ -125,8 +113,7 @@
                             "relative_highlights": [3]
                         }
                     ],
-                    "cluster_CoT_topic": "Stewart's graditute",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "Stewart's graditute"
                 }, 
                 {
                     "output": "Stewart became a prison reform advocate through her experience.",
@@ -137,8 +124,7 @@
                             "relative_highlights": [1,2]
                         }
                     ],
-                    "cluster_CoT_topic": "Stewart's prison reform advocacy",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "Stewart's prison reform advocacy"
                 },
                 {
                     "output": "Her presence in the Prison has brought many reporters and tourists to town of Alderson, helping its economy.",
@@ -149,8 +135,7 @@
                             "relative_highlights": [4]
                         }
                     ],
-                    "cluster_CoT_topic": "the fact that Stewart's presence brought many reporters and tourists to Alderson",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "the fact that Stewart's presence brought many reporters and tourists to Alderson"
                 },
                 {
                     "output": "She emerged from the Alderson prison on March 6 with head held high, 20 pounds lighter and a lot wealthier, since shares in her company nearly tripled in value.",
@@ -166,8 +151,7 @@
                             "relative_highlights": [1,2]
                         }
                     ],
-                    "cluster_CoT_topic": "Stewart's release from prison and what happened to her afterwards",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "Stewart's release from prison and what happened to her afterwards"
                 },
                 {
                     "output": "Following her release, Stewart is planned to host a daily live-audience program on NBC beginning this fall.",
@@ -183,8 +167,7 @@
                             "relative_highlights": [5]
                         }
                     ],
-                    "cluster_CoT_topic": "Stewart hosting a daily live-audience program",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "Stewart hosting a daily live-audience program"
                 },
                 {
                     "output": "The show is scheduled to begin once Stewart's five months of house arrest end.",
@@ -195,8 +178,7 @@
                             "relative_highlights": [6]
                         }
                     ],
-                    "cluster_CoT_topic": "the show beginning after Stewart's five months of house arrest end",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "the show beginning after Stewart's five months of house arrest end"
                 }                                              
             ]
         },
@@ -226,8 +208,7 @@
                             "relative_highlights": [1,2,3,4,5]
                         }
                     ],
-                    "cluster_CoT_topic": "the connection between high-fructose corn syrup and obesity",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "the connection between high-fructose corn syrup and obesity"
                 },
                 {
                     "output": "Obesity among children has tripled itself in the last 30-40 years.",
@@ -243,8 +224,7 @@
                             "relative_highlights": [6]
                         }
                     ],
-                    "cluster_CoT_topic": "obesity rates in children",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "obesity rates in children"
                 },
                 {
                     "output": "Obesity increases the risk for type 2 diabetes.",
@@ -260,8 +240,7 @@
                             "relative_highlights": [7]
                         }
                     ],
-                    "cluster_CoT_topic": "obesity's diabetes-related risks",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "obesity's diabetes-related risks"
                 },
                 {
                     "output": "Bray believes that environmental factors have more to do with obesity than genetics.",
@@ -272,8 +251,7 @@
                             "relative_highlights": [12,13]
                         }
                     ],
-                    "cluster_CoT_topic": "which factors might account for obesity",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "which factors might account for obesity"
                 },
                 {
                     "output": "He suggests that childhood obesity can be prevented by getting more sleep, decreasing sedentary activities, drinking more milk (calcium controls weight), thinking portion control and eating breakfast.",
@@ -284,8 +262,7 @@
                             "relative_highlights": [9,10,11,14,15,16,17,18,19]
                         }
                     ],
-                    "cluster_CoT_topic": "how obesity might be prevented",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "how obesity might be prevented"
                 },
                 {
                     "output": "An Institute of Medicine report found compelling evidence encouraging the food industry to change the nature of foods being marketed to children.",
@@ -296,8 +273,7 @@
                             "relative_highlights": [1,2,3,4]
                         }
                     ],
-                    "cluster_CoT_topic": "the Institute of Medicine's report",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "the Institute of Medicine's report"
                 },
                 {
                     "output": "Former US president Bill Clinton announced a 10-year initiative to combat childhood obesity, and also participated in an obesity-battling campaign invloving several cartoon characters.",
@@ -313,8 +289,7 @@
                             "relative_highlights": [5]
                         }
                     ],
-                    "cluster_CoT_topic": "Bill Clinton's involvement in battling obesity",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "Bill Clinton's involvement in battling obesity"
                 },
                 {
                     "output": "Clinton's involvement comes from his own health-related experience.",
@@ -325,8 +300,7 @@
                             "relative_highlights": [3]
                         }
                     ],
-                    "cluster_CoT_topic": "the reason behind Bill Clinton's ivolvement in battling obesity",
-                    "blueprint_QAs": []
+                    "cluster_CoT_topic": "the reason behind Bill Clinton's ivolvement in battling obesity"
                 }
             ]
         },
@@ -374,17 +348,7 @@
                             "relative_highlights": [1]
                         }
                     ],
-                    "cluster_CoT_topic": "the killing of five family members by a rebel group, and the consequent capturing of one of the group's members",
-                    "blueprint_QAs": [
-                        {
-                            "q": "How many members of a Colombian family were killed?",
-                            "a": "five"
-                        },
-                        {
-                            "q": "Who was captured by the Colombian Navy?",
-                            "a": "a member of the rebel Revolutionary Armed Forces of Colombia (FARC)"
-                        }
-                    ]
+                    "cluster_CoT_topic": "the killing of five family members by a rebel group, and the consequent capturing of one of the group's members"
                 },
                 {
                     "output":"FARC, with about 17,000 fighters and a smaller leftist guerilla group are locked in a 40-year civil war with the government.",
@@ -410,21 +374,7 @@
                             "relative_highlights": [3]
                         }
                     ],
-                    "cluster_CoT_topic": "two Colombian rebel groups and the civil war they are a part of",
-                    "blueprint_QAs": [
-                        {
-                            "q": "How many fighters does FARC have?",
-                            "a": "17,000"
-                        },
-                        {
-                            "q": "Who has been engaged in a civil war with the Colombian government?",
-                            "a": "The FARC and a smaller rebel group"
-                        },
-                        {
-                            "q": "How long has the Colombian civil-war been going on?",
-                            "a": "40 years"
-                        }
-                    ]
+                    "cluster_CoT_topic": "two Colombian rebel groups and the civil war they are a part of"
                 },
                 {
                     "output":"Considered the largest rebel organization in Colombia, FARC is also its oldest.",
@@ -440,17 +390,7 @@
                             "relative_highlights": [2]
                         }
                     ],
-                    "cluster_CoT_topic": "the fact that FARC is Colombia's largest and oldest rebel group",
-                    "blueprint_QAs": [
-                        {
-                            "q": "Who is Colombia's largest rebel group?",
-                            "a": "FARC"
-                        },
-                        {
-                            "q": "Who is Colombia's oldest rebel group?",
-                            "a": "FARC"
-                        }
-                    ]
+                    "cluster_CoT_topic": "the fact that FARC is Colombia's largest and oldest rebel group"
                 },
                 {
                     "output":"FARC allegedly finances itself through drug trafficking and kidnappings.",
@@ -461,13 +401,7 @@
                             "relative_highlights": [2]
                         }
                     ],
-                    "cluster_CoT_topic": "how FARC finances itself",
-                    "blueprint_QAs": [
-                        {
-                            "q": "How is FARC claimed to finance itself?",
-                            "a": "through drug trafficking and kidnappings"
-                        }
-                    ]
+                    "cluster_CoT_topic": "how FARC finances itself"
                 },
                 {
                     "output":"About 3,500 people are killed yearly.",
@@ -478,13 +412,7 @@
                             "relative_highlights": [4]
                         }
                     ],
-                    "cluster_CoT_topic": "how many people are killed yearly in the Colombian civil war",
-                    "blueprint_QAs": [
-                        {
-                            "q": "How many people are killed every year in the Colombian civil war?",
-                            "a": "3,500"
-                        }
-                    ]
+                    "cluster_CoT_topic": "how many people are killed yearly in the Colombian civil war"
                 },
                 {
                     "output":"The United States warned its citizens in Colombia on Wednesday of a possible spike in \"terrorist activity\".",
@@ -495,17 +423,7 @@
                             "relative_highlights": [1]
                         }
                     ],
-                    "cluster_CoT_topic": "a US warning to its citizens",
-                    "blueprint_QAs": [
-                        {
-                            "q": "What did the united states warn US citizens of?",
-                            "a": "a possible spike in \"terrorist activity\" in Colombia"
-                        },
-                        {
-                            "q": "When did the United States warn its citizens?",
-                            "a": "on Wednesday"
-                        }
-                    ]
+                    "cluster_CoT_topic": "a US warning to its citizens"
                 },
                 {
                     "output": "This warning was issued due to the one-year anniversary of the death of Edgar Gustavo Navarro, one of FARC's commanders.",
@@ -516,17 +434,7 @@
                             "relative_highlights": [2,3]
                         }
                     ],
-                    "cluster_CoT_topic": "the reason for the American warning - the one year anniversary of the death of Edgar Gustavo Navarro",
-                    "blueprint_QAs": [
-                        {
-                            "q": "What does FARC mark?",
-                            "a": "the one-year anniversary of the death of one of their commanders"
-                        },
-                        {
-                            "q": "Whose anniversary of the death is being marked?",
-                            "a": "Edgar Gustavo Navarro"
-                        }
-                    ]
+                    "cluster_CoT_topic": "the reason for the American warning - the one year anniversary of the death of Edgar Gustavo Navarro"
                 },
                 {
                     "output": "Navarro is believed to have been responsible for the abduction of three American citizens.",
@@ -537,13 +445,7 @@
                             "relative_highlights": [4]
                         }
                     ],
-                    "cluster_CoT_topic": "Navarro's connection to the abduction of Americans",
-                    "blueprint_QAs": [
-                        {
-                            "q": "Who do Colombian authorities think was behind the abduction of the three Americans?",
-                            "a": "Navarro"
-                        }
-                    ]
+                    "cluster_CoT_topic": "Navarro's connection to the abduction of Americans"
                 },
                 {
                     "output":"In an attempt to free them, as well as other hostages, including politicians, soldiers and police officers, the Colombian government agreed to meet with FARC members.",
@@ -559,29 +461,7 @@
                             "relative_highlights": [1,2,3]
                         }
                     ],
-                    "cluster_CoT_topic": "Colombian government's agreement to meet FARC memebers to free hostages",
-                    "blueprint_QAs": [
-                        {
-                            "q": "Who is willing to meet with members of the country's main leftist rebel group?",
-                            "a": "Colombia's hardline government"
-                        },
-                        {
-                            "q": "Why did Colombia's hardline government agree to meet with members of the country's main leftist rebel group?",
-                            "a": "freeing dozens of rebel hostages"
-                        },
-                        {
-                            "q": "Who are being held by FARC?",
-                            "a": "politicians"
-                        },
-                        {
-                            "q": "Who are being held by FARC?",
-                            "a": "soldiers"
-                        },
-                        {
-                            "q": "Who are being held by FARC?",
-                            "a": "police officers"
-                        }                                
-                    ]
+                    "cluster_CoT_topic": "Colombian government's agreement to meet FARC memebers to free hostages"
                 }
             ]
         }

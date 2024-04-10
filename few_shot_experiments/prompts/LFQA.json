@@ -10,17 +10,13 @@
     "instruction-content-selection": "In this task, you are presented with a question and several documents. The goal is to answer the question based on the given documents. As an intermediate step, you need to identify the minimal number of spans within the documents that answer the question. For each document, copy verbatim those spans, and use <SPAN_DELIM> as a delimiter between each consecutive span. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive spans. IMPORTANT: Each such span must be a single consecutive verbatim span from the corresponding passages. IMPORTANT: make sure the total number of copied words (from all passages) is around 100 words, and not more than 200.",
     "instruction-next-cluster-fusion": "In this task, you are presented with several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). You are also presented with a prefix of a paragraph. You job is to generate the next sentence in the paragraph, that covers all and only the \"highlighted\" spans. Make sure it connects well with the prefix, and that it covers all and only the \"highlighted\" spans.",
     "instruction-next-cluster-fusion-with-question": "In this task, you are presented with a question and several passages, where some parts are \"highlighted\" (namely, there are {HS} and {HE} tokens before and after each such span). You are also presented with a prefix of a paragraph. The goal is to generate a paragraph that answers the question, based on the passages. The given prefix is what you generated so far. You job is to generate the next sentence in the paragraph, that covers all and only the \"highlighted\" spans. Make sure it connects well with the prefix, that it covers all and only the \"highlighted\" spans, and that it properly builds towards a full and coherent response to the question.",
-    "instruction-iter-QA-blueprint": "In this task, you are presented with a question, several documents and a prefix. The goal is to answer the question based on the given documents. We will be building the output sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract a set of up to 5 question-answer pairs from the input documents that best describe the relevant information for the next sentence (acting as a plan), and then generate that sentence based on those question-answer pairs. IMORTANT: avoid redundancy compared to the prefix. IMORTANT: the output must be of the form: A: <ANSWER1> Q: <QUESTION1> ; A: <ANSWER2> Q: <QUESTION2> ; ... So the next sentence is: <NEXT_SENT>. IMPORTANT: if the prefix already properly answers the question, reply \"{BLUEPRINT_EOS}\".",
-    "instruction-iter-span-blueprint": "In this task, you are presented with a question, several documents and a prefix. The goal is to answer the question based on the given documents. We will be building the output sentence-by-sentence. The given prefix is what we generated so far. Your job is to generate the next sentence. For that, first extract verbatim a set of relevant spans from the input documents that best describe the relevant information for the next sentence (acting as a plan), and use <SPAN_DELIM> as a delimiter between each consecutive span. Then, generate the next sentence based on those spans. IMORTANT: avoid redundancy compared to the prefix. IMPORTANT: The output must be of the format Document [<DOC_ID>]: <SPAN_DELIM>-delimited consecutive spans. IMPORTANT: Each such span must be a single consecutive verbatim span from the corresponding passages. IMPORTANT: if the prefix already properly answers the question, reply \"{BLUEPRINT_EOS}\".",
     "demo_sep": "\n\n\n",
     "highlight_start_tkn":"<highlight_start>",
     "highlight_end_tkn":"<highlight_end>",
-    "blueprint_eos": "STOP GENERATION",
     "demo_prompt": "{INST}\n\n{D}\n{A}",
     "demo_prompt_content_selection": "{INST}\n\nQuestion: {Q}\n\n{D}\n{A}",
     "demo_prompt_next_cluster_fusion": "{INST}\n\n{D}\nPrefix:{PRFX}\n{A}",
     "demo_prompt_next_cluster_fusion_with_question": "{INST}\n\nQuestion: {Q}\n\n{D}\nPrefix:{PRFX}\n{A}",
-    "demo_prompt_iter_blueprint": "{INST}\n\nQuestion: {Q}\n\n{D}\nPrefix:{PRFX}\nAnswer:\n{A}",
     "doc_prompt": "Document [{ID}]: {P}\n",
     "answer_FiC_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nSo the answer is: {CoT_RESP}",
     "answer_FiC-CoT_prompt": "Answer: The highlighted spans are:\n{HLIST}\n\nThe highlighted spans are combined as follows:\n{PLANNING}",
@@ -38,10 +34,6 @@
     "answer_e2e_only_setting_prompt": "Answer: {RESP}",
     "answer_ALCE_prompt": "Answer: {ALCE_RESP}",
     "answer_ALCE_format": "{ALCE_SENT} {ALCE_CITATIONS}",
-    "answer_iter_QA_blueprint_prompt": "Plan:\n{QA_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
-    "answer_iter_span_blueprint_prompt": "Plan:\n{SPAN_BLUEPRINT_PLAN}\nSo the next sentence is: {NEXT_SENT}",
-    "answer_iter_QA_blueprint_format": "A: {BLUEPRINT_A} Q: {BLUEPRINT_Q}",
-    "answer_iter_span_blueprint_format": "Document [{ID}]: {CONTENT_LIST}",
     "demos": [
         {
             "answer": "The name \"salt water taffy\" is believed to have originated in Atlantic City, New Jersey in the late 19th century. According to legend, a man named David Bradley had a candy shop that was flooded during a storm, and his entire stock of taffy became soaked with sea water from the Atlantic Ocean. Bradley then began to sell the salty taffy as \"salt water taffy\", and the name stuck.",
@@ -68,17 +60,7 @@
                             "relative_highlights": [1]
                         }
                     ],
-                    "cluster_CoT_topic": "the place and time the name \"salt water taffy\" is believed to have originated from",
-                    "blueprint_QAs": [
-                        {
-                            "q": "Where was Salt water taffy born?", 
-                            "a": "along the boardwalks of Atlantic City, New Jersey"
-                        },
-                        {
-                            "q": "When was Salt water taffy born?",
-                            "a": "in the late 19th century"
-                        }
-                    ]
+                    "cluster_CoT_topic": "the place and time the name \"salt water taffy\" is believed to have originated from"
                 },
                 {
                     "output": "According to legend, a man named David Bradley had a candy shop that was flooded during a storm, and his entire stock of taffy became soaked with sea water from the Atlantic Ocean.",
@@ -94,17 +76,7 @@
                             "relative_highlights": [2,3,4]
                         }
                     ],
-                    "cluster_CoT_topic": "David Bradley's shop being flooded, and his stock of taffy becaming soaked with sea water",
-                    "blueprint_QAs": [
-                        {
-                            "q": "What happened to David Bradley according to the legend?",
-                            "a": "his candy shop which got flooded during a storm"
-                        },
-                        {
-                            "q": "What happened to David Bradley's taffy after his shot got flooded?",
-                            "a": "it got soaked in ocean salt water"
-                        }
-                    ]
+                    "cluster_CoT_topic": "David Bradley's shop being flooded, and his stock of taffy becaming soaked with sea water"
                 },
                 {
                     "output": "Bradley then began to sell the salty taffy as \"salt water taffy\", and the name stuck.",
@@ -120,13 +92,7 @@
                             "relative_highlights": [4]
                         }
                     ],
-                    "cluster_CoT_topic": "the fact that David Bradley started to sell his soaked taffy as \"salt water taffy\"",
-                    "blueprint_QAs": [
-                        {
-                            "q": "What did David Bradley do after his taffy got soaked in ocean salt water?",
-                            "a": "he began to sell it as \"salt water taffy\""
-                        }
-                    ]
+                    "cluster_CoT_topic": "the fact that David Bradley started to sell his soaked taffy as \"salt water taffy\""
                 }                             
             ]
         },
@@ -175,17 +141,7 @@
                             "relative_highlights": [1,2]
                         }
                     ],
-                    "cluster_CoT_topic": "USPS not working on President's Day except for the delivery of some priority packages",
-                    "blueprint_QAs": [
-                        {
-                            "q": "What happens to all US Postal Service branches and locations will on President's Day?",
-                            "a": "they are closed"
-                        },
-                        {
-                            "q": "What types of USPS packages might still be delivered on President's Day?",
-                            "a": "priority packages"
-                        }
-                    ]
+                    "cluster_CoT_topic": "USPS not working on President's Day except for the delivery of some priority packages"
                 },
                 {
                     "output": "However, UPS will still be delivering mail on this day, and its stores will be open.",
@@ -211,17 +167,7 @@
                             "relative_highlights": [1,2,3]
                         }
                     ],
-                    "cluster_CoT_topic": "UPS still working on President's Day",
-                    "blueprint_QAs": [
-                        {
-                            "q": "What is the status of UPS stores during President's Day?",
-                            "a": "remain open"
-                        },
-                        {
-                            "q" : "What will UPS maintain on President's Day?",
-                            "a": "its pickup and delivery services"
-                        }
-                    ]
+                    "cluster_CoT_topic": "UPS still working on President's Day"
                 },
                 {
                     "output": "Yet, some delays in UPS services might be expected.",
@@ -237,13 +183,7 @@
                             "relative_highlights": [4]
                         }
                     ],
-                    "cluster_CoT_topic": "some delays in UPS services",
-                    "blueprint_QAs": [
-                        {
-                            "q": "How will President's day could affect UPS services?",
-                            "a": "packages sent via UPS SurePost or UPS Mail Innovations will be delayed by one day"
-                        }
-                    ]
+                    "cluster_CoT_topic": "some delays in UPS services"
                 }                                
             ]
         },
@@ -282,13 +222,7 @@
                             "relative_highlights": [3,4]
                         }
                     ],
-                    "cluster_CoT_topic": "the fact that research showed that electric cars are better for the environment",
-                    "blueprint_QAs": [
-                        {
-                            "q": "What has research shown?",
-                            "a": "electric cars are better for the environment"
-                        }
-                    ]
+                    "cluster_CoT_topic": "the fact that research showed that electric cars are better for the environment"
                 },
                 {
                     "output": "They have lower emissions than petrol or diesel cars, reducing the greenhouse effect and air pollution.",
@@ -309,21 +243,7 @@
                             "relative_highlights": [1,2,3,5]
                         }
                     ],
-                    "cluster_CoT_topic": "the reduced emission of electric cars and the impact on the greenhouse effect and air pollution",
-                    "blueprint_QAs": [
-                        {
-                            "q": "What do electric cars emit less than petrol or diesel cars?",
-                            "a": "greenhouse gases and air pollutants"
-                        },
-                        {
-                            "q": "What is reduced when we use electric vehicles?",
-                            "a": "the enhanced greenhouse effect"
-                        },
-                        {
-                            "q": "What is reduced when we use electric vehicles?",
-                            "a": "air polution"
-                        }
-                    ]
+                    "cluster_CoT_topic": "the reduced emission of electric cars and the impact on the greenhouse effect and air pollution"
                 },
                 {
                     "output": "This takes into account their production and electricity generation.",
@@ -334,13 +254,7 @@
                             "relative_highlights": [3]
                         }
                     ],
-                    "cluster_CoT_topic": "what is taken into account when talking about the reduced emission of electric cars",
-                    "blueprint_QAs": [
-                        {
-                            "q" : "When claiming that electric cars emit fewer greenhouse gases and air pollutants, what is taken into account?",
-                            "a" : "their production and electricity generation"
-                        }
-                    ]
+                    "cluster_CoT_topic": "what is taken into account when talking about the reduced emission of electric cars"
                 },
                 {
                     "output": "They can also optimize sustainable transportation, specifically when charged with renewable energy.",
@@ -351,13 +265,7 @@
                             "relative_highlights": [4]
                         }
                     ],
-                    "cluster_CoT_topic": "the benefit of electric cars for sustainable transportation",
-                    "blueprint_QAs": [
-                        {
-                            "q": "How can electric cars benefit us when charged with renewable energy?",
-                            "a": "by optimizing sustainable transportation"
-                        }
-                    ]
+                    "cluster_CoT_topic": "the benefit of electric cars for sustainable transportation"
                 }                                            
             ]
         },
@@ -401,17 +309,7 @@
                             "relative_highlights": [1,2,3]
                         }
                     ],
-                    "cluster_CoT_topic": "the new color of the Oscar carpet and why it changed",
-                    "blueprint_QAs": [
-                        {
-                            "q": "Why was the Oscar carpet's color changed?",
-                            "a": "so the talent could better transition from daytime arrivals to the evening"
-                        },
-                        {
-                            "q": "What is the Oscar carpet's new color?",
-                            "a": "champagne"
-                        }
-                    ]
+                    "cluster_CoT_topic": "the new color of the Oscar carpet and why it changed"
                 },
                 {
                     "output": "This transition was necessary, as the Oscars always began very early in the day, when it was hot, but everybody was dressed for a night event.",
@@ -422,25 +320,7 @@
                             "relative_highlights": [4,5]
                         }
                     ],
-                    "cluster_CoT_topic": "why there was a need to turn the Oscars into an only-night event",
-                    "blueprint_QAs": [
-                        {
-                            "q": "Since when did the Oscars had this problem?",
-                            "a": "ever since it's started"
-                        },
-                        {
-                            "q": "When does the Oscars begin?",
-                            "a": "early in the day"
-                        },
-                        {
-                            "q": "What happens when the Oscars begin?",
-                            "a": "there is sunshine and heat"
-                        },
-                        {
-                            "q": "What is everybody coming to the Oscar's dressed up for?",
-                            "a": "a night event"
-                        }
-                    ]
+                    "cluster_CoT_topic": "why there was a need to turn the Oscars into an only-night event"
                 },
                 {
                     "output": "This specific color was chosen because it evokes the sunset, symbolizing the sunset before the golden hour.",
@@ -451,17 +331,7 @@
                             "relative_highlights": [4]
                         }
                     ],
-                    "cluster_CoT_topic": "why champhagne was the new color chosen for the carpet",
-                    "blueprint_QAs": [
-                        {
-                            "q": "What does the new carpet color evoke?",
-                            "a": "the sunset"
-                        },
-                        {
-                            "q": "Why was this new color chosen for the carpet?",
-                            "a": "because this is the sunset before the golden hour"
-                        }
-                    ]
+                    "cluster_CoT_topic": "why champhagne was the new color chosen for the carpet"
                 }                                   
             ]
         }
