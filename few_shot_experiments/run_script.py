@@ -17,7 +17,7 @@ def main(args):
     # get the outdir
     CoT_suffix = "_CoT" if args.CoT else ""
     merged_cross_sent_highlights_suffix = "_merged_cross_sents_sep" if args.merge_cross_sents_highlights else ""
-    outdir = args.outdir if args.outdir else  f"results/{args.setting}/{args.subtask}{CoT_suffix}{merged_cross_sent_highlights_suffix}"
+    outdir = args.outdir if args.outdir else  f"results/{args.split}/{args.setting}/{args.subtask}{CoT_suffix}{merged_cross_sent_highlights_suffix}"
     logging.info(f"saving results to {outdir}")
 
     # create outdir if doesn't exist

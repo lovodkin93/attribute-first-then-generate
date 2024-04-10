@@ -1,0 +1,14 @@
+[
+    {
+        "subtask": "content_selection",
+        "config_file": "configs/dev/LFQA/content_selection.json"
+    },
+    {
+        "subtask": "clustering",
+        "config_file": "configs/dev/LFQA/clustering.json"
+    },
+    {
+        "subtask": "iterative_sentence_generation",
+        "config_file": "configs/dev/LFQA/iterative_sentence_generation.json"
+    }
+]

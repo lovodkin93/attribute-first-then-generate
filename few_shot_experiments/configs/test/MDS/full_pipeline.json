@@ -1,0 +1,14 @@
+[
+    {
+        "subtask": "content_selection",
+        "config_file": "configs/test/MDS/content_selection.json"
+    },
+    {
+        "subtask": "clustering",
+        "config_file": "configs/test/MDS/clustering.json"
+    },
+    {
+        "subtask": "iterative_sentence_generation",
+        "config_file": "configs/test/MDS/iterative_sentence_generation.json"
+    }
+]

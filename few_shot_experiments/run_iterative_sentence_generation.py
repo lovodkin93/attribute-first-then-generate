@@ -294,7 +294,7 @@ def main(args):
     if args.rerun:
         outdir = args.rerun_path
     else:
-        outdir = args.outdir if args.outdir else  f"results/{args.setting}/iterative_sentence_generation{no_prefix_suffix}{merged_cross_sent_highlights_suffix}" 
+        outdir = args.outdir if args.outdir else  f"results/{args.split}/{args.setting}/iterative_sentence_generation{no_prefix_suffix}{merged_cross_sent_highlights_suffix}" 
     logging.info(f"saving results to {outdir}")
 
     # create outdir if doesn't exist

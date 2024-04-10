@@ -1,0 +1,10 @@
+[
+    {
+        "subtask": "content_selection",
+        "config_file": "configs/test/MDS/content_selection.json"
+    },
+    {
+        "subtask": "fusion_in_context",
+        "config_file": "configs/test/MDS/fusion_in_context.json"
+    }
+]
