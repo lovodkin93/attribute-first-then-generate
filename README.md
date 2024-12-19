@@ -102,12 +102,20 @@ Scripts for fine-tuning models and running fine-tuned models are in the director
 # Citation
 If you use this in your work, please cite:
 ```
-@misc{slobodkin2024attribute,
-      title={Attribute First, then Generate: Locally-attributable Grounded Text Generation}, 
-      author={Aviv Slobodkin and Eran Hirsch and Arie Cattan and Tal Schuster and Ido Dagan},
-      year={2024},
-      eprint={2403.17104},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL}
+@inproceedings{slobodkin-etal-2024-attribute,
+    title = "Attribute First, then Generate: Locally-attributable Grounded Text Generation",
+    author = "Slobodkin, Aviv  and
+      Hirsch, Eran  and
+      Cattan, Arie  and
+      Schuster, Tal  and
+      Dagan, Ido",
+    booktitle = "Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+    month = aug,
+    year = "2024",
+    address = "Bangkok, Thailand",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2024.acl-long.182",
+    doi = "10.18653/v1/2024.acl-long.182",
+    pages = "3309--3344",
 }
 ```
