@@ -1,6 +1,6 @@
 # Attribute First, then Generate
 
-Repository for the paper `Attribute First, then Generate: Locally-attributable Grounded Text Generation`, accepted at ACL 2024 main conference.
+Repository for the paper `Attribute First, then Generate: Locally-attributable Grounded Text Generation`, accepted to ACL 2024 main conference.
 
 [ACL Anthology](https://aclanthology.org/2024.acl-long.182/) | [arXiv](https://arxiv.org/abs/2403.17104)
 
