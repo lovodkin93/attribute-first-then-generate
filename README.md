@@ -1,5 +1,9 @@
 # Attribute First, then Generate
 
+Repository for the paper `Attribute First, then Generate: Locally-attributable Grounded Text Generation`, accepted at ACL 2024 main conference.
+
+[ACL Anthology](https://aclanthology.org/2024.acl-long.182/) | [arXiv](https://arxiv.org/abs/2403.17104)
+
 <p align=left>
     <img src="./First-attribute-then-generate architecture.jpg" width="60%" height="60%"  alt="taxonomy"/>
 </p>
